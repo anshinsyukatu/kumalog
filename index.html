@@ -1,0 +1,1306 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#D84336" />
+<title>くまログ</title>
+<style>
+  /* 配色はクマうら Web版と同一の CSS 変数 */
+  :root{
+    --bg:#FAFAFA;
+    --text:#141414;
+    --sub:#3F3F3F;
+    --btn-bg:#E0E0E0;
+    --field-bg:#FFFFFF;
+    --highlight:#FFF3CD;
+    --accent:#D84336;
+    --chip-good:#2E7D32;
+    --chip-bad:#C62828;
+    --chip-mid:#F9A825;
+    --border:#BEBEBE;
+    /* 背景を持つ要素（カード等）専用の固定色セット：ダークモードでも反転させない */
+    --card-bg:#FFFDF8;
+    --card-text:#221E15;
+    --card-sub:#4F4836;
+    --card-line:#E4DCC9;
+    --card-field:#FFFFFF;
+    --card-btn:#F1EADA;
+    --card-btn-hover:#E9DFC8;
+    --radius:10px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#121212;
+      --text:#F5F5F5;
+      --sub:#CFCFCF;
+      --btn-bg:#383838;
+      --field-bg:#202020;
+      --highlight:#4A3E1A;
+      --border:#5A5A5A;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",system-ui,-apple-system,sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent)}
+  button{font:inherit;cursor:pointer}
+  input,select,textarea{font:inherit}
+  .wrap{max-width:720px;margin:0 auto;padding:10px 12px 28px}
+
+  /* header：クマは名前の直後に置く、©のような丸囲みマーク（ボタンではない） */
+  .head{padding:4px 2px 4px}
+  .logo{display:flex;align-items:center}
+  .head h1{font-size:24px;line-height:1.15;margin:0;font-weight:800;letter-spacing:.02em;display:flex;align-items:flex-start;flex-wrap:wrap}
+  .head h1 .done{font-size:12px;font-weight:700;color:#fff;background:var(--accent);padding:3px 8px;border-radius:999px;margin-left:8px;margin-top:5px;letter-spacing:.06em}
+  /* マークは固定色セット＋太い線＋耳・目は塗りで、小さくても見えるようにする */
+  .bear-c{flex:0 0 auto;width:31px;height:31px;margin-left:4px;margin-top:0;border:2.6px solid #D84336;border-radius:50%;background:#FFFDF8;color:#D84336;display:inline-grid;place-items:center}
+  .bear-c svg{width:22px;height:22px;display:block}
+
+  /* 保存先の一文（小さく控えめに。詳しくは「説明」タブの「記録の保存について」） */
+  .storage-line{margin:0 2px;font-size:12px;line-height:1.5;color:var(--sub)}
+  #storageNote{margin-top:2px;font-weight:700;color:var(--accent)}
+
+  /* tabs */
+  .tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:var(--field-bg);border:1px solid var(--border);border-radius:999px;padding:4px;margin:10px 0;position:sticky;top:8px;z-index:5}
+  .tabs button{border:0;background:transparent;padding:7px 2px;border-radius:999px;font-weight:700;font-size:13.5px;color:var(--sub)}
+  .tabs button[aria-selected="true"]{background:var(--accent);color:#fff}
+
+  /* カード：固定色セット（背景 #FFFDF8 / 文字 #3A352D、ダークでも反転しない） */
+  .card{background:var(--card-bg);color:var(--card-text);border:1px solid var(--card-line);border-radius:var(--radius);padding:13px;margin-bottom:10px}
+  .card h2{margin:0 0 6px;font-size:17px;line-height:1.3}
+  /* タイトルと補足を横並びにする行（必ず1行に収める） */
+  .title-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin-bottom:10px}
+  .title-row h2{margin:0;font-size:16px;white-space:nowrap;flex:0 0 auto}
+  .lede{margin:0;font-size:12px;font-weight:700;color:var(--accent);white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .goal-hint{font-size:11.5px;font-weight:700;color:var(--accent);margin-left:6px;white-space:nowrap}
+  .card h3{margin:0 0 8px;font-size:15px}
+  .muted{color:var(--card-sub);font-size:13px}
+  .small{font-size:12.5px;color:var(--card-sub)}
+
+  /* form */
+  .date-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .date-row input[type="date"]{flex:1;min-width:150px}
+  input[type="date"],input[type="time"],input[type="number"],input[type="month"],select,textarea{
+    background:var(--card-field);color:var(--card-text);border:1px solid var(--card-line);border-radius:8px;padding:8px 10px;min-height:48px;width:100%;min-width:0;
+  }
+  /* 日付・時刻の入力マスは、体重のステッパー欄と同じ高さ・文字サイズに統一する */
+  input[type="date"],input[type="time"]{height:48px;font-size:17px;font-weight:700;text-align:center}
+  textarea{resize:vertical;min-height:44px}
+  label{font-size:13.5px;font-weight:800;color:var(--card-text);display:block;margin-bottom:4px}
+  input,textarea,select{scroll-margin-top:76px;scroll-margin-bottom:110px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  /* スマホでも2列を保つ組（.keep2）は縦に積まず、間隔とボタンを詰めて並べる */
+  @media(max-width:520px){
+    .grid2:not(.keep2){grid-template-columns:1fr}
+    .grid2.keep2{gap:8px}
+    .grid2.keep2 .stepper{gap:6px}
+    .grid2.keep2 .stepper button{flex-basis:42px}
+    .grid2.keep2 .stepper input{font-size:17px}
+    .grid2.keep2 .num-lg{font-size:17px}
+  }
+  .field{margin-bottom:12px}
+  .field:last-child{margin-bottom:0}
+  /* 記録タブの項目ブロック（グラフと同じ ↑↓ ボタンで並び替え可能） */
+  .rec-block{margin-bottom:14px}
+  .rec-block:last-child{margin-bottom:2px}
+  .rec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;min-height:30px}
+  .rec-title{font-size:13.5px;font-weight:800;color:var(--card-text)}
+  .rec-head label{display:inline;margin:0}
+  .rec-head .ord-btns button{width:30px;height:30px;font-size:13px;border-radius:7px}
+  /* データタブ：目標の入力欄をタップしたとき、キーボードの上までスクロールできるよう下に余白を作る */
+  #panel-data{padding-bottom:55vh}
+  /* チップは固定色セット（カードと同じくダークモードでも反転させない） */
+  .baseline-chip{display:none;font-size:11px;font-weight:800;color:#6E5600;background:#FFF3CD;border:1px solid #E3C86B;border-radius:999px;padding:3px 8px;vertical-align:middle;white-space:nowrap}
+  .baseline-chip.on{display:inline-block}
+  /* 「前回の値を表示中」は見出し行の一番右に置く */
+  .title-row .baseline-chip{margin-left:auto;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+
+  /* ステッパー（＋/−が主役、直接入力は補助） */
+  .stepper{display:flex;gap:8px;align-items:stretch}
+  .stepper button{flex:0 0 48px;min-height:48px;border-radius:10px;border:1px solid var(--card-line);background:var(--card-btn);color:var(--card-text);font-size:22px;font-weight:800;line-height:1}
+  .stepper button:active{background:var(--card-btn-hover)}
+  .stepper input{flex:1;text-align:center;font-size:19px;font-weight:800;min-height:48px}
+  .unit{font-size:12px;color:var(--card-sub);text-align:center;margin-top:2px}
+  /* 歩数などステッパーなしの数値欄も、体重欄と同じ見た目・サイズに統一 */
+  .num-lg{text-align:center;font-size:19px;font-weight:800;height:48px}
+
+  .sleep-box{background:var(--card-field);border:1px solid var(--card-line);border-radius:10px;padding:10px}
+  .btn-wake{width:100%;margin-top:8px;background:var(--accent);border:1px solid var(--accent);color:#fff;border-radius:10px;padding:8px 10px;font-weight:800;font-size:15px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{border:1px solid var(--card-line);background:var(--card-field);color:var(--card-text);border-radius:999px;padding:9px 14px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.ghost{background:transparent}
+  .btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .toggle-group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .toggle-group button{padding:7px 9px;border-radius:10px;border:1px solid var(--card-line);background:var(--card-field);color:var(--card-text);font-weight:700;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+  .toggle-group .cap{font-size:12px;font-weight:700}
+  .beer{font-size:26px;line-height:1.15;display:inline-block}
+  .beer-no{position:relative;display:inline-block}
+  .beer-no::after{content:"✕";position:absolute;left:50%;top:50%;transform:translate(-50%,-54%);font-size:36px;font-weight:900;color:#C62828;line-height:1;text-shadow:0 0 3px #FFFDF8,0 0 3px #FFFDF8,0 0 3px #FFFDF8}
+  .toggle-group button.sel-yes{background:var(--accent);border-color:var(--accent);color:#fff}
+  .toggle-group button.sel-no{background:var(--card-btn);border-color:var(--card-line);color:var(--card-text)}
+  .duration{margin-top:8px;background:var(--card-bg);border:1px dashed var(--card-line);border-radius:10px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center}
+  .duration b{font-size:18px}
+  .save-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .save-bar .primary{flex:1;justify-content:center;padding:12px;font-size:16px;border-radius:12px}
+  .toast{margin-top:10px;font-size:13px;color:var(--chip-good);font-weight:700;min-height:20px}
+
+  /* history */
+  .empty{border:1.5px dashed var(--card-line);border-radius:10px;padding:22px 16px;text-align:center;color:var(--card-sub)}
+  .empty strong{color:var(--card-text);display:block;font-size:15px;margin-bottom:4px}
+  .hist-item{border:1px solid var(--card-line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--card-field);color:var(--card-text)}
+  .hist-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .hist-date{font-weight:800;font-size:15px}
+  .hist-date span{font-weight:600;color:var(--card-sub);font-size:12px;margin-left:6px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{background:var(--card-bg);border:1px solid var(--card-line);border-radius:999px;padding:4px 9px;font-size:12.5px}
+  .chip b{font-weight:800}
+  .hist-actions{display:flex;gap:6px}
+  .icon-btn{width:36px;height:36px;border-radius:999px;border:1px solid var(--card-line);background:var(--card-field);display:grid;place-items:center;color:var(--card-sub)}
+  .memo-text{margin-top:8px;font-size:13.5px;background:var(--card-bg);border-radius:8px;padding:8px 10px;white-space:pre-wrap;word-break:break-word}
+
+  /* graph */
+  .graph-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .graph-top h2{margin:0}
+  .graph-top .range-row{flex:1;margin:0;min-width:190px}
+  .avg-box{border:1px dashed var(--card-line);border-radius:10px;padding:8px 12px;margin:0 0 12px;font-size:13px;background:var(--card-field)}
+  .avg-box>div{display:flex;justify-content:space-between;gap:10px;padding:2px 0;flex-wrap:wrap}
+  .avg-box b{font-weight:800;white-space:nowrap}
+  .range-row{display:flex;gap:8px;margin:2px 0 12px}
+  .range-row button{flex:1;padding:10px;border-radius:10px;border:1px solid var(--card-line);background:var(--card-field);color:var(--card-text);font-weight:700}
+  .range-row button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+  .checks{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+  .check{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--card-line);border-radius:999px;padding:8px 12px;background:var(--card-field);font-size:14px;font-weight:700;cursor:pointer;user-select:none}
+  .check input{accent-color:var(--accent);width:18px;height:18px;margin:0}
+  .chart-panel{border:1px solid var(--card-line);border-radius:10px;overflow:hidden;margin-bottom:12px;background:var(--card-field)}
+  .chart-head{display:flex;justify-content:space-between;align-items:center;padding:10px 12px 6px;gap:8px}
+  .chart-head strong{font-size:14.5px}
+  .chart-head span{font-size:12px;color:var(--card-sub);font-weight:700}
+  .chart-head .head-left{display:flex;align-items:baseline;gap:8px;min-width:0}
+  /* グラフの並び替えボタン（↑↓） */
+  .ord-btns{display:flex;gap:4px;flex:0 0 auto}
+  .ord-btns button{width:34px;height:34px;border-radius:8px;border:1px solid var(--card-line);background:var(--card-btn);color:var(--card-text);font-size:15px;font-weight:800;line-height:1;display:grid;place-items:center;padding:0}
+  .ord-btns button:active{background:var(--card-btn-hover)}
+  .ord-btns button:disabled{opacity:.32}
+  .chart-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;padding:0 6px 8px}
+  .chart-scroll::-webkit-scrollbar{height:6px}
+  .chart-scroll::-webkit-scrollbar-thumb{background:var(--card-line);border-radius:999px}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--card-sub);padding:0 12px 10px}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:4px}
+
+  /* data */
+  .data-actions{display:grid;gap:12px}
+  .data-actions .btn{justify-content:center;padding:14px;font-size:15px;border-radius:12px;width:100%}
+  .file-input{width:100%}
+
+  /* 説明ページ：すべて折りたたみ */
+  details.note-fold{border:1px solid var(--card-line);border-radius:10px;background:var(--card-field);margin-bottom:10px;overflow:hidden}
+  details.note-fold summary{cursor:pointer;padding:13px 14px;font-weight:800;font-size:15px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  details.note-fold summary::-webkit-details-marker{display:none}
+  details.note-fold summary::after{content:"＋";color:var(--accent);font-weight:800;font-size:18px;flex:0 0 auto}
+  details.note-fold[open ] summary::after{content:"−"}
+  details.note-fold .fold-body{padding:0 14px 14px;font-size:14px;line-height:1.75}
+  details.note-fold .fold-body p{margin:0 0 8px}
+  details.note-fold .fold-body p:last-child{margin-bottom:0}
+  details.note-fold .fold-body ul{margin:0 0 8px;padding-left:20px}
+  .csv-format{background:#2B2620;color:#F5EFE6;border-radius:10px;padding:12px;overflow-x:auto;font-size:12px;line-height:1.6}
+  .csv-format code{white-space:pre}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid var(--card-line);vertical-align:top}
+  th{color:var(--card-sub);font-size:12px}
+  .divider{height:1px;background:var(--card-line);margin:14px 0}
+  footer{margin-top:10px}
+  .foot-note{font-size:12.5px;color:var(--sub);text-align:center;margin:0}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="head">
+    <div class="logo">
+      <h1>くまログ<span class="bear-c" role="img" aria-label="くまマーク"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.8" cy="5.4" r="2.7" fill="currentColor"/><circle cx="17.2" cy="5.4" r="2.7" fill="currentColor"/><path d="M12 20.8c-4.3 0-7-2.6-7-6.2C5 10.7 8.1 7.5 12 7.5s7 3.2 7 7.1c0 3.6-2.7 6.2-7 6.2Z" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linejoin="round"/><circle cx="9.4" cy="13.3" r="1.1" fill="currentColor"/><circle cx="14.6" cy="13.3" r="1.1" fill="currentColor"/><path d="M10.1 16.2c.6.5 1.2.8 1.9.8s1.3-.3 1.9-.8" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg></span><span class="done">完成</span></h1>
+    </div>
+  </header>
+
+  <!-- 保存先の一文（控えめに。詳しくは「説明」タブの「記録の保存について」） -->
+  <p class="storage-line">記録はこの端末の中だけに保存されます。機種変更やブラウザのデータ消去で消えることがあります。</p>
+  <p class="storage-line hidden" id="storageNote"></p>
+
+  <nav class="tabs" role="tablist" aria-label="くまログ">
+    <button role="tab" aria-selected="true" data-tab="record">記録</button>
+    <button role="tab" aria-selected="false" data-tab="graph">グラフ</button>
+    <button role="tab" aria-selected="false" data-tab="data">データ</button>
+    <button role="tab" aria-selected="false" data-tab="history">履歴</button>
+    <button role="tab" aria-selected="false" data-tab="about">説明</button>
+  </nav>
+
+  <!-- RECORD：入力のみ（説明文は置かない） -->
+  <section id="panel-record">
+    <div class="card">
+      <div class="title-row">
+        <h2>今日の記録</h2>
+        <p class="lede">入れたいものだけでOK!</p>
+        <span class="baseline-chip" id="baselineChip">前回の値を表示中</span>
+      </div>
+      <div id="recBlocks">
+      <div class="rec-block" data-rkey="date">
+        <div class="rec-head"><span class="rec-title"><label for="dateInput">日付</label></span></div>
+        <div class="date-row">
+          <input type="date" id="dateInput" />
+          <button class="btn" id="todayBtn" type="button">今日</button>
+          <button class="btn" id="yesterdayBtn" type="button">昨日</button>
+        </div>
+      </div>
+
+      <div class="rec-block" data-rkey="sleep">
+        <div class="rec-head"><span class="rec-title">睡眠<span class="goal-hint" id="goalHintSleep"></span></span></div>
+        <div class="sleep-box">
+          <div class="grid2 keep2">
+            <div>
+              <label for="wakeInput">起きた時刻</label>
+              <input type="time" id="wakeInput" />
+              <button class="btn-wake" id="wakeNowBtn" type="button">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                今起きた！
+              </button>
+            </div>
+            <div>
+              <label for="bedInput">寝た時刻</label>
+              <input type="time" id="bedInput" />
+              <button class="btn" id="fellBtn" type="button" aria-pressed="false" style="width:100%;justify-content:center;margin-top:8px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+                寝落ちした
+              </button>
+            </div>
+          </div>
+          <div class="duration" aria-live="polite">
+            <span class="small" style="font-weight:700;color:var(--card-text)">睡眠時間（推定）</span>
+            <b id="durationText">—</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="rec-block" data-rkey="weight">
+        <div class="rec-head"><span class="rec-title">体重・体温</span></div>
+      <div class="grid2 keep2">
+        <div class="field">
+          <label for="weightInput">体重（kg）<span class="goal-hint" id="goalHintWeight"></span></label>
+          <div class="stepper">
+            <button type="button" data-step="weight:-0.1" aria-label="体重を0.1減らす">−</button>
+            <input type="number" id="weightInput" inputmode="decimal" step="0.1" min="20" max="250" placeholder="—" />
+            <button type="button" data-step="weight:0.1" aria-label="体重を0.1増やす">＋</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="tempInput">体温（℃）</label>
+          <div class="stepper">
+            <button type="button" data-step="temp:-0.1" aria-label="体温を0.1下げる">−</button>
+            <input type="number" id="tempInput" inputmode="decimal" step="0.1" min="30" max="43" placeholder="—" />
+            <button type="button" data-step="temp:0.1" aria-label="体温を0.1上げる">＋</button>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div class="rec-block" data-rkey="bp">
+        <div class="rec-head"><span class="rec-title">血圧（mmHg）<span class="goal-hint" id="goalHintBp"></span></span></div>
+        <div class="grid2 keep2">
+          <div>
+            <div class="stepper">
+              <button type="button" data-step="sys:-1" aria-label="上の血圧を下げる">−</button>
+              <input type="number" id="sysInput" inputmode="numeric" step="1" min="50" max="260" placeholder="上" />
+              <button type="button" data-step="sys:1" aria-label="上の血圧を上げる">＋</button>
+            </div>
+            <div class="unit">上</div>
+          </div>
+          <div>
+            <div class="stepper">
+              <button type="button" data-step="dia:-1" aria-label="下の血圧を下げる">−</button>
+              <input type="number" id="diaInput" inputmode="numeric" step="1" min="30" max="180" placeholder="下" />
+              <button type="button" data-step="dia:1" aria-label="下の血圧を上げる">＋</button>
+            </div>
+            <div class="unit">下</div>
+          </div>
+        </div>
+        <div class="grid2 keep2" style="margin-top:10px">
+          <div>
+            <div class="stepper">
+              <button type="button" data-step="pulse:-1" aria-label="脈拍を下げる">−</button>
+              <input type="number" id="pulseInput" inputmode="numeric" step="1" min="30" max="220" placeholder="脈拍" />
+              <button type="button" data-step="pulse:1" aria-label="脈拍を上げる">＋</button>
+            </div>
+            <div class="unit">脈拍（回/分）</div>
+          </div>
+          <div></div>
+        </div>
+      </div>
+
+      <div class="rec-block" data-rkey="steps">
+        <div class="rec-head"><span class="rec-title">歩数・アルコール</span></div>
+      <div class="grid2 keep2">
+        <div class="field">
+          <label for="stepsInput">歩数<span class="goal-hint" id="goalHintSteps"></span></label>
+          <input type="number" id="stepsInput" class="num-lg" inputmode="numeric" step="1" min="0" placeholder="—" />
+        </div>
+        <div class="field">
+          <label>アルコール</label>
+          <div class="toggle-group" role="group" aria-label="アルコール">
+            <button type="button" id="drinkYes" aria-label="飲んだ"><span class="beer" aria-hidden="true">🍺</span><span class="cap">飲んだ</span></button>
+            <button type="button" id="drinkNo" aria-label="飲まなかった"><span class="beer-no" aria-hidden="true"><span class="beer">🍺</span></span><span class="cap">飲まなかった</span></button>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div class="rec-block" data-rkey="memo">
+        <div class="rec-head"><span class="rec-title"><label for="memoInput">気分・体調メモ</label></span></div>
+        <textarea id="memoInput"></textarea>
+      </div>
+      </div>
+
+      <div class="save-bar">
+        <button class="btn primary" id="saveBtn" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          保存する
+        </button>
+        <button class="btn ghost" id="clearBtn" type="button">入力をクリア</button>
+      </div>
+      <div class="toast" id="toast" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="panel-history" class="hidden">
+    <div class="card">
+      <h2>履歴（<span id="histCount">0</span>件）</h2>
+      <div id="historyList"></div>
+      <div id="historyEmpty" class="empty">
+        <strong>まだ記録がありません</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRAPH -->
+  <section id="panel-graph" class="hidden">
+    <div class="card">
+      <div class="graph-top">
+        <h2>グラフ</h2>
+        <div class="range-row" role="group" aria-label="表示範囲">
+          <button type="button" id="range7" aria-pressed="true">直近1週間</button>
+          <button type="button" id="range30" aria-pressed="false">1か月</button>
+        </div>
+      </div>
+      <div class="checks" id="graphChecks" role="group" aria-label="表示するグラフ">
+        <label class="check"><input type="checkbox" value="weight" checked /> 体重</label>
+        <label class="check"><input type="checkbox" value="bp" checked /> 血圧</label>
+        <label class="check"><input type="checkbox" value="sleep" checked /> 睡眠時間</label>
+        <label class="check"><input type="checkbox" value="steps" checked /> 歩数</label>
+      </div>
+      <div id="avgSummary"></div>
+      <div id="graphArea"></div>
+      <div id="graphEmpty" class="empty hidden">
+        <strong>この期間の記録がまだありません</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATA：書き出し・読み込みのボタンだけ -->
+  <section id="panel-data" class="hidden">
+    <div class="card">
+      <div class="title-row"><h2>データ</h2><span class="small" id="exportInfo">記録 0 件</span></div>
+      <div class="data-actions">
+        <button class="btn primary" id="exportBtn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></svg>
+          CSVを書き出す（ダウンロード）
+        </button>
+        <div>
+          <label for="importFile">CSVを読み込む</label>
+          <input type="file" id="importFile" accept=".csv,text/csv" class="file-input" />
+          <div class="toast" id="importToast"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="title-row"><h2>目標</h2><p class="lede">自分で決めた数字だけを使います</p></div>
+      <div class="grid2 keep2">
+        <div class="field">
+          <label for="goalWeight">体重（kg）</label>
+          <input type="number" id="goalWeight" inputmode="decimal" step="0.1" min="20" max="250" placeholder="—" />
+        </div>
+        <div class="field">
+          <label for="goalSleep">睡眠（時間）</label>
+          <input type="number" id="goalSleep" inputmode="decimal" step="0.5" min="0" max="24" placeholder="—" />
+        </div>
+        <div class="field">
+          <label for="goalSys">血圧・上（mmHg）</label>
+          <input type="number" id="goalSys" inputmode="numeric" step="1" min="50" max="260" placeholder="—" />
+        </div>
+        <div class="field">
+          <label for="goalDia">血圧・下（mmHg）</label>
+          <input type="number" id="goalDia" inputmode="numeric" step="1" min="30" max="180" placeholder="—" />
+        </div>
+        <div class="field">
+          <label for="goalSteps">歩数（歩）</label>
+          <input type="number" id="goalSteps" inputmode="numeric" step="100" min="0" placeholder="—" />
+        </div>
+      </div>
+      <div class="save-bar">
+        <button class="btn primary" id="goalSaveBtn" type="button">目標を保存する</button>
+      </div>
+      <div class="toast" id="goalToast" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ABOUT：説明はここ1か所に集約（すべて折りたたみ） -->
+  <section id="panel-about" class="hidden">
+    <div class="card">
+      <h2>説明</h2>
+
+      <details class="note-fold">
+        <summary>このアプリについて</summary>
+        <div class="fold-body">
+          <p>くまログは、体重・血圧・睡眠などを記録して振り返るための道具です。診断や医療アドバイスはしません。体調で気になることがあるときは、医療機関や公的な相談窓口にご相談ください。</p>
+          <p>目標の数値を出す場合も、アプリが基準を決めることはなく、使う人自身が決めた数字だけを使います。</p>
+        </div>
+      </details>
+
+      <details class="note-fold">
+        <summary>記録の保存について</summary>
+        <div class="fold-body">
+          <p>記録はこの端末の中だけに保存されます。書き出し（エクスポート）をしていない場合、機種変更やブラウザのデータ消去で、記録が消える可能性があります。</p>
+          <p>ページを閉じても、この端末のブラウザの中に記録が残ります。機種変更のときは、「データ」タブから CSV で書き出し、新しい端末で読み込んで引き継いでください。</p>
+        </div>
+      </details>
+
+      <details class="note-fold">
+        <summary>睡眠と歩数は自動で入りますか</summary>
+        <div class="fold-body">
+          <p>くまログでは、時計やヘルスケアアプリとの自動連携はしていません。体重・血圧を入力しても、睡眠と歩数は自動では反映されません。</p>
+          <p>睡眠と歩数は、「記録」タブで手入力するか、CSVでまとめて取り込めます。過去の分もCSVを用意すれば日付ごとに取り込めます（同じ日付の記録は上書きされます）。</p>
+        </div>
+      </details>
+
+      <details class="note-fold">
+        <summary>目標について</summary>
+        <div class="fold-body">
+          <p>体重・血圧・睡眠・歩数の目標は、「データ」タブの「目標」で自分で決めて保存します。空欄のままなら目標は表示されません。保存した目標は、記録タブの項目名の横と、グラフの緑の破線で確認できます。</p>
+        </div>
+      </details>
+
+      <details class="note-fold">
+        <summary>入力のしかた</summary>
+        <div class="fold-body">
+          <ul>
+            <li>全部埋めなくて大丈夫です。分かる項目だけ記録してください。同じ日付で保存すると上書きされます。</li>
+            <li>記録タブの項目（日付・睡眠・体重・体温・血圧・歩数・アルコール・メモ）は、各項目の右上の ↑ ↓ ボタンで並び替えられます。順番はこの端末に保存されます。</li>
+            <li>体重・血圧・脈拍・体温は、前回の記録の値が最初に表示されます。＋／−ボタンで調整するだけでも記録できます。数字を直接タップして書き換えることもできます。初めての記録だけは、数字を直接入力してください。</li>
+            <li>脈拍は血圧の下の欄です。測っていない日は空欄のままで大丈夫です。</li>
+            <li>睡眠は、起きたら「今起きた！」を押すだけで起きた時刻が入ります。寝た時刻はだいたいで大丈夫です。</li>
+            <li>寝た時刻が分からない日は「寝落ちした」を選んでください。時刻なしで記録でき、睡眠時間は「時刻不明」として扱われます。</li>
+            <li>睡眠時間は推定です。正確さよりも、「飲んだ日は血圧が高めかも」のような関係に気づくことを目的にしています。</li>
+            <li>アルコールはタップで選択、もう一度押すと解除できます。</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="note-fold">
+        <summary>グラフの見かた</summary>
+        <div class="fold-body">
+          <ul>
+            <li>初期表示は直近1週間です。「1か月」に切り替えられます。</li>
+            <li>単位が違う項目は1枚に混ぜず、項目ごとに分けて並べて表示します。チェックを入れた項目は全部表示できます（画面は縦に長くなります）。横スクロールは各グラフで連動します。</li>
+            <li>グラフの並ぶ順番は、各グラフの右上にある ↑ ↓ ボタンで入れ替えられます。順番はこの端末に保存されます。</li>
+            <li>アルコールを飲んだ日は、グラフ下に ● の印が付きます。</li>
+            <li>グラフの上には、選んだ項目ごとに直近7日の平均（週平均）と直近30日の平均（月平均）が表示されます。</li>
+            <li>黒い破線は表示期間の平均、緑の破線は「データ」タブで設定した目標です（目標が未設定の項目には出ません）。</li>
+            <li>睡眠時間は推定値です。寝落ちした日（時刻不明）はグラフに表示されません。</li>
+            <li>血圧は上と下を別々の線で表示します。</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="note-fold">
+        <summary>履歴の編集・削除</summary>
+        <div class="fold-body">
+          <p>履歴の鉛筆ボタンで、その日の記録を「記録」タブに読み込んで直せます。ゴミ箱ボタンでその日の記録を削除できます。</p>
+        </div>
+      </details>
+
+      <details class="note-fold">
+        <summary>CSVの形式</summary>
+        <div class="fold-body">
+          <p>CSVは Excel やスプレッドシートで開ける形式です。読み込みは、日付が同じ記録を上書きし、違う日付は追加します。くまログで書き出したCSV、そのまま読み込めます。クマが用意した取り込み用CSVも同じ形式です。</p>
+          <div class="csv-format"><code>date,weight_kg,bp_sys,bp_dia,bp_pulse,sleep_bed,sleep_wake,sleep_fell_asleep,steps,temp_c,drink,memo
+2026-11-09,68.4,128,82,72,23:30,06:45,0,8420,36.5,1,よく眠れた
+2026-11-08,68.7,132,85,,,06:30,1,6200,,1,寝落ちした日</code></div>
+          <div style="overflow-x:auto;margin-top:10px">
+          <table>
+            <thead><tr><th>列</th><th>意味</th><th>書き方</th></tr></thead>
+            <tbody>
+              <tr><td><b>date</b></td><td>日付</td><td>YYYY-MM-DD</td></tr>
+              <tr><td><b>weight_kg</b></td><td>体重</td><td>数値（空欄可）</td></tr>
+              <tr><td><b>bp_sys / bp_dia</b></td><td>血圧 上 / 下</td><td>整数（空欄可）</td></tr>
+              <tr><td><b>bp_pulse</b></td><td>脈拍（回/分）</td><td>整数（空欄可）</td></tr>
+              <tr><td><b>sleep_bed / sleep_wake</b></td><td>寝た時刻 / 起きた時刻</td><td>HH:MM（空欄可）</td></tr>
+              <tr><td><b>sleep_fell_asleep</b></td><td>寝落ち</td><td>1＝寝落ち、0＝時刻あり</td></tr>
+              <tr><td><b>steps</b></td><td>歩数</td><td>整数（空欄可）</td></tr>
+              <tr><td><b>temp_c</b></td><td>体温</td><td>数値（空欄可）</td></tr>
+              <tr><td><b>drink</b></td><td>アルコール</td><td>1＝飲んだ、0＝飲まなかった、空欄＝未記録</td></tr>
+              <tr><td><b>memo</b></td><td>メモ</td><td>自由文（カンマを含む場合は "..." で囲む）</td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <footer>
+    <p class="foot-note">くまログ ・ ブラウザ版</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  // Records persist on this device only (browser storage), per the notice on the first screen.
+  var STORAGE_KEY = 'kumalog.records.v1';
+  var records = {}; // date -> record
+  var storageOK = false;
+  function persist(){
+    if(!storageOK) return;
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); }catch(e){ /* storage full/blocked: keep in-memory */ }
+  }
+  function restore(){
+    try{
+      localStorage.setItem(STORAGE_KEY+'.probe', '1');
+      localStorage.removeItem(STORAGE_KEY+'.probe');
+      storageOK = true;
+    }catch(e){ storageOK = false; }
+    if(!storageOK) return;
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      var parsed = JSON.parse(raw);
+      if(!parsed || typeof parsed !== 'object') return;
+      Object.keys(parsed).forEach(function(k){
+        if(/^\d{4}-\d{2}-\d{2}$/.test(k) && parsed[k] && typeof parsed[k]==='object'){
+          parsed[k].date = k;
+          records[k] = parsed[k];
+        }
+      });
+    }catch(e){ /* corrupted data: start empty rather than crash */ }
+  }
+  // 目標（データタブで設定。記録と同じく端末内だけに保存）
+  var GOALS_KEY = 'kumalog.goals.v1';
+  var goals = {weight:null, sys:null, dia:null, sleep:null, steps:null};
+  function persistGoals(){
+    if(!storageOK) return;
+    try{ localStorage.setItem(GOALS_KEY, JSON.stringify(goals)); }catch(e){ /* keep in-memory */ }
+  }
+  function restoreGoals(){
+    if(!storageOK) return;
+    try{
+      var raw = localStorage.getItem(GOALS_KEY);
+      if(!raw) return;
+      var p = JSON.parse(raw);
+      if(!p || typeof p!=='object') return;
+      ['weight','sys','dia','sleep','steps'].forEach(function(k){
+        if(typeof p[k]==='number' && !isNaN(p[k])) goals[k]=p[k];
+      });
+    }catch(e){ /* start with no goals */ }
+  }
+  function goalFor(key){
+    if(key==='weight') return goals.weight;
+    if(key==='sleep') return goals.sleep;
+    if(key==='steps') return goals.steps;
+    return null;
+  }
+  function fillGoalInputs(){
+    $('goalWeight').value = goals.weight!=null? goals.weight : '';
+    $('goalSleep').value = goals.sleep!=null? goals.sleep : '';
+    $('goalSys').value = goals.sys!=null? goals.sys : '';
+    $('goalDia').value = goals.dia!=null? goals.dia : '';
+    $('goalSteps').value = goals.steps!=null? goals.steps : '';
+  }
+  function applyGoalHints(){
+    $('goalHintWeight').textContent = goals.weight!=null? '目標 '+goals.weight+' kg' : '';
+    $('goalHintSleep').textContent = goals.sleep!=null? '目標 '+goals.sleep+' 時間' : '';
+    $('goalHintSteps').textContent = goals.steps!=null? '目標 '+Number(goals.steps).toLocaleString('ja-JP')+' 歩' : '';
+    $('goalHintBp').textContent = (goals.sys!=null||goals.dia!=null)? '目標 '+(goals.sys!=null?goals.sys:'—')+' / '+(goals.dia!=null?goals.dia:'—') : '';
+  }
+
+  var drinkState = null; // true, false, null
+  var fellAsleep = false;
+  var graphDays = 7; // 初期表示は直近1週間
+
+  // グラフの表示順（↑↓ボタンで入れ替え、端末内に保存）
+  var ORDER_KEY = 'kumalog.graphOrder.v1';
+  var graphOrder = ['weight','bp','sleep','steps'];
+  function persistOrder(){
+    if(!storageOK) return;
+    try{ localStorage.setItem(ORDER_KEY, JSON.stringify(graphOrder)); }catch(e){ /* keep in-memory */ }
+  }
+  function restoreOrder(){
+    if(!storageOK) return;
+    try{
+      var raw = localStorage.getItem(ORDER_KEY);
+      if(!raw) return;
+      var p = JSON.parse(raw);
+      if(!Array.isArray(p)) return;
+      var valid = p.filter(function(k){ return graphOrder.indexOf(k)>=0; });
+      graphOrder.forEach(function(k){ if(valid.indexOf(k)<0) valid.push(k); });
+      if(valid.length) graphOrder = valid;
+    }catch(e){ /* keep default order */ }
+  }
+
+  // 記録タブの項目の並び順（グラフと同じ ↑↓ ボタン方式、端末内に保存）
+  var REC_ORDER_KEY = 'kumalog.recordOrder.v1';
+  var recOrder = ['date','sleep','weight','bp','steps','memo'];
+  var recNames = {date:'日付', sleep:'睡眠', weight:'体重・体温', bp:'血圧', steps:'歩数・アルコール', memo:'気分・体調メモ'};
+  function persistRecOrder(){
+    if(!storageOK) return;
+    try{ localStorage.setItem(REC_ORDER_KEY, JSON.stringify(recOrder)); }catch(e){ /* keep in-memory */ }
+  }
+  function restoreRecOrder(){
+    if(!storageOK) return;
+    try{
+      var raw = localStorage.getItem(REC_ORDER_KEY);
+      if(!raw) return;
+      var p = JSON.parse(raw);
+      if(!Array.isArray(p)) return;
+      var valid = p.filter(function(k){ return recOrder.indexOf(k)>=0; });
+      recOrder.forEach(function(k){ if(valid.indexOf(k)<0) valid.push(k); });
+      if(valid.length) recOrder = valid;
+    }catch(e){ /* keep default order */ }
+  }
+  function applyRecOrder(){
+    var wrapEl=$('recBlocks'); if(!wrapEl) return;
+    var blocks={};
+    Array.prototype.forEach.call(wrapEl.querySelectorAll('.rec-block'), function(b){ blocks[b.dataset.rkey]=b; });
+    var list=recOrder.filter(function(k){ return !!blocks[k]; });
+    list.forEach(function(k){ wrapEl.appendChild(blocks[k]); });
+    list.forEach(function(k, i){
+      var btns=blocks[k].querySelectorAll('.ord-btns button');
+      if(btns[0]) btns[0].disabled = i===0;
+      if(btns[1]) btns[1].disabled = i===list.length-1;
+    });
+  }
+  function moveRec(key, dir){
+    var i=recOrder.indexOf(key); if(i<0) return;
+    var j=i+dir; if(j<0 || j>=recOrder.length) return;
+    recOrder.splice(i,1);
+    recOrder.splice(j,0,key);
+    persistRecOrder();
+    applyRecOrder();
+  }
+  function initRecBlocks(){
+    Array.prototype.forEach.call(document.querySelectorAll('.rec-block'), function(b){
+      var head=b.querySelector('.rec-head'); if(!head) return;
+      var key=b.dataset.rkey;
+      var ord=document.createElement('span'); ord.className='ord-btns';
+      var up=document.createElement('button'); up.type='button'; up.textContent='↑';
+      up.setAttribute('aria-label', (recNames[key]||key)+'を上へ移動');
+      up.addEventListener('click', function(){ moveRec(key, -1); });
+      var down=document.createElement('button'); down.type='button'; down.textContent='↓';
+      down.setAttribute('aria-label', (recNames[key]||key)+'を下へ移動');
+      down.addEventListener('click', function(){ moveRec(key, 1); });
+      ord.appendChild(up); ord.appendChild(down);
+      head.appendChild(ord);
+    });
+  }
+
+  function $(id){ return document.getElementById(id); }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function todayStr(d){
+    d = d || new Date();
+    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  }
+  function addDaysStr(base, delta){
+    var p=base.split('-'); var d=new Date(Number(p[0]), Number(p[1])-1, Number(p[2]));
+    d.setDate(d.getDate()+delta); return todayStr(d);
+  }
+  function fmtDateJP(s){
+    if(!s) return '';
+    var p=s.split('-'); if(p.length!==3) return s;
+    var d=new Date(Number(p[0]), Number(p[1])-1, Number(p[2]));
+    var w=['日','月','火','水','木','金','土'][d.getDay()];
+    return Number(p[1])+'月'+Number(p[2])+'日（'+w+'）';
+  }
+  function numOrNull(v){ if(v===''||v==null) return null; var n=Number(v); return isNaN(n)?null:n; }
+  function timeToMin(t){ if(!t) return null; var p=t.split(':'); if(p.length<2) return null; return Number(p[0])*60+Number(p[1]); }
+
+  function calcDuration(bed, wake, fell){
+    if(fell) return {label:'時刻不明（寝落ち）', hours:null};
+    var b=timeToMin(bed), w=timeToMin(wake);
+    if(b==null||w==null) return {label:'—', hours:null};
+    var diff=w-b; if(diff<=0) diff+=24*60;
+    var h=Math.floor(diff/60), m=diff%60;
+    return {label: h+'時間'+(m? pad(m)+'分':''), hours: diff/60};
+  }
+  function updateDuration(){
+    var d=calcDuration($('bedInput').value, $('wakeInput').value, fellAsleep);
+    $('durationText').textContent=d.label;
+  }
+
+  // Tabs
+  var tabBtns=document.querySelectorAll('.tabs button');
+  tabBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      tabBtns.forEach(function(b){ b.setAttribute('aria-selected','false'); });
+      btn.setAttribute('aria-selected','true');
+      ['record','graph','data','history','about'].forEach(function(k){
+        $('panel-'+k).classList.toggle('hidden', k!==btn.dataset.tab);
+      });
+      if(btn.dataset.tab==='graph') renderGraph();
+      if(btn.dataset.tab==='history') renderHistory();
+    });
+  });
+
+  // Date init
+  $('dateInput').value=todayStr();
+  $('todayBtn').addEventListener('click', function(){ $('dateInput').value=todayStr(); loadForDate(); });
+  $('yesterdayBtn').addEventListener('click', function(){ var d=new Date(); d.setDate(d.getDate()-1); $('dateInput').value=todayStr(d); loadForDate(); });
+  $('dateInput').addEventListener('change', loadForDate);
+
+  // Sleep controls
+  $('wakeNowBtn').addEventListener('click', function(){
+    var n=new Date(); $('wakeInput').value=pad(n.getHours())+':'+pad(n.getMinutes()); updateDuration();
+  });
+  $('bedInput').addEventListener('change', updateDuration);
+  $('wakeInput').addEventListener('change', updateDuration);
+  $('fellBtn').addEventListener('click', function(){
+    fellAsleep=!fellAsleep;
+    $('fellBtn').classList.toggle('active', fellAsleep);
+    $('fellBtn').setAttribute('aria-pressed', String(fellAsleep));
+    $('bedInput').disabled=fellAsleep;
+    if(fellAsleep) $('bedInput').value='';
+    updateDuration();
+  });
+
+  // Steppers：前回値（または入力済みの値）を ＋/− で調整するのが基本。
+  // 空欄（初回）では何もしない＝直接入力してもらう。
+  document.querySelectorAll('[data-step]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var parts=btn.dataset.step.split(':'); var key=parts[0]; var delta=Number(parts[1]);
+      var map={weight:'weightInput', temp:'tempInput', sys:'sysInput', dia:'diaInput', pulse:'pulseInput'};
+      var input=$(map[key]); if(!input) return;
+      var cur=numOrNull(input.value);
+      if(cur==null){ input.focus(); return; }
+      var next=Math.round((cur+delta)*10)/10;
+      input.value = (key==='sys'||key==='dia'||key==='pulse') ? String(Math.round(next)) : next.toFixed(1);
+      input.dispatchEvent(new Event('change'));
+    });
+  });
+
+  // Drink toggle
+  function paintDrink(){
+    $('drinkYes').classList.toggle('sel-yes', drinkState===true);
+    $('drinkNo').classList.toggle('sel-no', drinkState===false);
+  }
+  $('drinkYes').addEventListener('click', function(){ drinkState = drinkState===true? null:true; paintDrink(); });
+  $('drinkNo').addEventListener('click', function(){ drinkState = drinkState===false? null:false; paintDrink(); });
+
+  function clearForm(){
+    $('weightInput').value=''; $('tempInput').value=''; $('sysInput').value=''; $('diaInput').value=''; $('pulseInput').value='';
+    $('stepsInput').value=''; $('memoInput').value=''; $('bedInput').value=''; $('wakeInput').value='';
+    drinkState=null; fellAsleep=false;
+    $('fellBtn').classList.remove('active'); $('fellBtn').setAttribute('aria-pressed','false'); $('bedInput').disabled=false;
+    $('baselineChip').classList.remove('on');
+    paintDrink(); updateDuration();
+  }
+  $('clearBtn').addEventListener('click', function(){ clearForm(); $('toast').textContent=''; });
+
+  // その日より前の直近の記録（基本初期値の元）
+  function baselineFor(date){
+    var dates=Object.keys(records).filter(function(d){ return d<date; }).sort();
+    if(dates.length) return records[dates[dates.length-1]];
+    var all=Object.keys(records).filter(function(d){ return d!==date; }).sort();
+    return all.length? records[all[all.length-1]] : null;
+  }
+
+  function loadForDate(){
+    var d=$('dateInput').value; var r=records[d];
+    clearForm();
+    if(r){
+      if(r.weight!=null) $('weightInput').value=r.weight;
+      if(r.temp!=null) $('tempInput').value=r.temp;
+      if(r.sys!=null) $('sysInput').value=r.sys;
+      if(r.dia!=null) $('diaInput').value=r.dia;
+      if(r.pulse!=null) $('pulseInput').value=r.pulse;
+      if(r.steps!=null) $('stepsInput').value=r.steps;
+      if(r.memo) $('memoInput').value=r.memo;
+      if(r.wake) $('wakeInput').value=r.wake;
+      fellAsleep=!!r.fell;
+      if(!fellAsleep && r.bed) $('bedInput').value=r.bed;
+      $('fellBtn').classList.toggle('active', fellAsleep);
+      $('fellBtn').setAttribute('aria-pressed', String(fellAsleep));
+      $('bedInput').disabled=fellAsleep;
+      drinkState = (r.drink===1? true : r.drink===0? false : null);
+      paintDrink(); updateDuration();
+      return;
+    }
+    // 未記録の日：前回の値を基本初期値として表示し、＋/−で調整できるようにする
+    var base=baselineFor(d);
+    if(base){
+      var applied=false;
+      if(base.weight!=null){ $('weightInput').value=base.weight; applied=true; }
+      if(base.temp!=null){ $('tempInput').value=base.temp; applied=true; }
+      if(base.sys!=null){ $('sysInput').value=base.sys; applied=true; }
+      if(base.dia!=null){ $('diaInput').value=base.dia; applied=true; }
+      if(base.pulse!=null){ $('pulseInput').value=base.pulse; applied=true; }
+      if(applied) $('baselineChip').classList.add('on');
+    }
+  }
+
+  function collect(){
+    var date=$('dateInput').value;
+    if(!date){ return null; }
+    return {
+      date: date,
+      weight: numOrNull($('weightInput').value),
+      temp: numOrNull($('tempInput').value),
+      sys: numOrNull($('sysInput').value),
+      dia: numOrNull($('diaInput').value),
+      pulse: numOrNull($('pulseInput').value),
+      steps: numOrNull($('stepsInput').value),
+      bed: fellAsleep? '' : $('bedInput').value,
+      wake: $('wakeInput').value,
+      fell: fellAsleep,
+      drink: drinkState===true?1: drinkState===false?0:null,
+      memo: $('memoInput').value.trim()
+    };
+  }
+  function isEmpty(r){
+    return r.weight==null && r.temp==null && r.sys==null && r.dia==null && r.pulse==null && r.steps==null && !r.bed && !r.wake && !r.fell && r.drink==null && !r.memo;
+  }
+
+  $('saveBtn').addEventListener('click', function(){
+    var r=collect(); if(!r){ $('toast').textContent='日付を選んでください。'; return; }
+    if(isEmpty(r)){ $('toast').textContent='何か1つ入力してから保存してください。'; $('toast').style.color='var(--chip-bad)'; return; }
+    records[r.date]=r;
+    persist();
+    $('toast').style.color='var(--chip-good)';
+    $('toast').textContent='✓ '+fmtDateJP(r.date)+' の記録を保存しました（'+Object.keys(records).length+'件）';
+    $('baselineChip').classList.remove('on');
+    updateCounts();
+  });
+
+  function updateCounts(){
+    var n=Object.keys(records).length;
+    $('histCount').textContent=n;
+    $('exportInfo').textContent='記録 '+n+' 件';
+  }
+
+  // History
+  function renderHistory(){
+    var list=$('historyList'); list.innerHTML='';
+    var dates=Object.keys(records).sort().reverse();
+    $('historyEmpty').style.display = dates.length? 'none':'block';
+    updateCounts();
+    dates.forEach(function(date){
+      var r=records[date];
+      var dur=calcDuration(r.bed, r.wake, r.fell);
+      var chips=[];
+      if(r.weight!=null) chips.push({label:'体重 ', value: String(r.weight)+' kg'});
+      if(r.sys!=null||r.dia!=null) chips.push({label:'血圧 ', value: (r.sys!=null?String(r.sys):'—')+' / '+(r.dia!=null?String(r.dia):'—')});
+      if(r.pulse!=null) chips.push({label:'脈拍 ', value: String(r.pulse)+' 回/分'});
+      if(r.wake||r.fell) chips.push({label:'睡眠 ', value: dur.label + (r.wake?' ・ 起床 '+r.wake:'')});
+      if(r.steps!=null) chips.push({label:'歩数 ', value: Number(r.steps).toLocaleString('ja-JP')});
+      if(r.temp!=null) chips.push({label:'体温 ', value: String(r.temp)+'℃'});
+      if(r.drink===1) chips.push({label:'アルコール ', value:'🍺 飲んだ'});
+      if(r.drink===0) chips.push({label:'アルコール ', value:'飲まなかった'});
+      var div=document.createElement('div'); div.className='hist-item';
+      var top=document.createElement('div'); top.className='hist-top';
+      var title=document.createElement('div'); title.className='hist-date';
+      title.textContent=fmtDateJP(date);
+      var sp=document.createElement('span'); sp.textContent=date; title.appendChild(sp);
+      var actions=document.createElement('div'); actions.className='hist-actions';
+      var editBtn=document.createElement('button'); editBtn.className='icon-btn'; editBtn.title='編集'; editBtn.setAttribute('aria-label', date+'を編集');
+      editBtn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
+      editBtn.addEventListener('click', function(){
+        $('dateInput').value=date; loadForDate();
+        document.querySelector('[data-tab="record"]').click();
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+      var delBtn=document.createElement('button'); delBtn.className='icon-btn'; delBtn.title='削除'; delBtn.setAttribute('aria-label', date+'を削除');
+      delBtn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 15h10l1-15"/></svg>';
+      delBtn.addEventListener('click', function(){
+        delete records[date]; persist(); renderHistory();
+        if($('dateInput').value===date) loadForDate();
+      });
+      actions.appendChild(editBtn); actions.appendChild(delBtn);
+      top.appendChild(title); top.appendChild(actions); div.appendChild(top);
+      if(chips.length){
+        var c=document.createElement('div'); c.className='chips';
+        chips.forEach(function(chip){ var s=document.createElement('span'); s.className='chip'; s.appendChild(document.createTextNode(chip.label)); var b=document.createElement('b'); b.textContent=chip.value; s.appendChild(b); c.appendChild(s); });
+        div.appendChild(c);
+      }
+      if(r.memo){ var m=document.createElement('div'); m.className='memo-text'; m.textContent=r.memo; div.appendChild(m); }
+      list.appendChild(div);
+    });
+  }
+
+  // Graph
+  var panelMeta={
+    weight:{title:'体重', unit:'kg', color:'#D84336'},
+    bp:{title:'血圧', unit:'mmHg', color:'#D84336', color2:'#2E7D32'},
+    sleep:{title:'睡眠時間（推定）', unit:'時間', color:'#C17900'},
+    steps:{title:'歩数', unit:'歩', color:'#2E7D32'}
+  };
+  var checkEls=document.querySelectorAll('#graphChecks input');
+  checkEls.forEach(function(cb){
+    cb.addEventListener('change', function(){ renderGraph(); });
+  });
+  function moveGraph(key, dir){
+    var checkedSet={};
+    Array.prototype.forEach.call(checkEls, function(c){ if(c.checked) checkedSet[c.value]=true; });
+    var i=graphOrder.indexOf(key); if(i<0) return;
+    var j=i+dir;
+    while(j>=0 && j<graphOrder.length && !checkedSet[graphOrder[j]]) j+=dir;
+    if(j<0 || j>=graphOrder.length) return;
+    graphOrder.splice(i,1);
+    graphOrder.splice(j,0,key);
+    persistOrder();
+    renderGraph();
+  }
+  $('range7').addEventListener('click', function(){ graphDays=7; paintRange(); renderGraph(); });
+  $('range30').addEventListener('click', function(){ graphDays=30; paintRange(); renderGraph(); });
+  function paintRange(){
+    $('range7').setAttribute('aria-pressed', String(graphDays===7));
+    $('range30').setAttribute('aria-pressed', String(graphDays===30));
+  }
+  function rangeDays(){
+    var end=todayStr(); var arr=[];
+    for(var i=graphDays-1;i>=0;i--) arr.push(addDaysStr(end, -i));
+    return arr;
+  }
+  function valueFor(key, r){
+    if(!r) return null;
+    if(key==='weight') return r.weight;
+    if(key==='sleep'){ var d=calcDuration(r.bed, r.wake, r.fell); return d.hours; }
+    if(key==='steps') return r.steps;
+    return null;
+  }
+  var GRID='#C9C0AA', GLABEL='#141414', ACCENT='#D84336', GOALC='#1B7A43';
+  function buildChartSVG(key, days){
+    var per = days.length<=7 ? 52 : 26;
+    var W=Math.max(320, days.length*per), H=150, PL=44, PR=10, PT=12, PB=26;
+    var innerW=W-PL-PR, innerH=H-PT-PB;
+    var vals=[];
+    days.forEach(function(ds){ var r=records[ds]; if(key==='bp'){ if(r&&(r.sys!=null)) vals.push(r.sys); if(r&&(r.dia!=null)) vals.push(r.dia);} else { var v=valueFor(key, records[ds]); if(v!=null) vals.push(v);} });
+    if(!vals.length) return '<div style="padding:18px 12px;color:'+GLABEL+';font-size:13px">この期間のデータがありません</div>';
+    var avgVal=null;
+    if(key!=='bp'){
+      var asum=0; vals.forEach(function(v){ asum+=v; });
+      avgVal=asum/vals.length;
+    }
+    var min=Math.min.apply(null, vals), max=Math.max.apply(null, vals);
+    if(min===max){ min-= (key==='weight'?1: key==='sleep'?0.5:5); max+= (key==='weight'?1: key==='sleep'?0.5:5); }
+    // 目標があれば、線がはみ出さないよう表示範囲に含める
+    var goalVals=[];
+    if(key==='bp'){ if(goals.sys!=null) goalVals.push(goals.sys); if(goals.dia!=null) goalVals.push(goals.dia); }
+    else { var g0=goalFor(key); if(g0!=null) goalVals.push(g0); }
+    if(goalVals.length){ min=Math.min(min, Math.min.apply(null, goalVals)); max=Math.max(max, Math.max.apply(null, goalVals)); }
+    var padY=(max-min)*0.15; min-=padY; max+=padY;
+    function x(i){ return PL + (days.length<=1? innerW/2 : i*(innerW/(days.length-1))); }
+    function y(v){ return PT + (max-v)/(max-min)*innerH; }
+    var svg='<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+panelMeta[key].title+'のグラフ">';
+    for(var g=0; g<=3; g++){
+      var gv=min+(max-min)*g/3; var gy=y(gv);
+      svg+='<line x1="'+PL+'" y1="'+gy+'" x2="'+(W-PR)+'" y2="'+gy+'" stroke="'+GRID+'" stroke-width="1"/>';
+      svg+='<text x="'+(PL-6)+'" y="'+(gy+4)+'" text-anchor="end" font-size="11" font-weight="600" fill="'+GLABEL+'">'+(key==='sleep'? gv.toFixed(1): Math.round(gv))+'</text>';
+    }
+    days.forEach(function(ds,i){
+      var r=records[ds];
+      if(r && r.drink===1){
+        svg+='<circle cx="'+x(i)+'" cy="'+(H-8)+'" r="3" fill="'+ACCENT+'"><title>'+ds+' アルコール</title></circle>';
+      }
+      var dayNum=Number(ds.slice(8));
+      var showLabel = days.length<=7 || dayNum===1 || dayNum%5===0;
+      if(showLabel){
+        var lbl = days.length<=7 ? (Number(ds.slice(5,7))+'/'+dayNum) : String(dayNum);
+        svg+='<text x="'+x(i)+'" y="'+(H-12)+'" text-anchor="middle" font-size="11" font-weight="600" fill="'+GLABEL+'">'+lbl+'</text>';
+      }
+      svg+='<line x1="'+x(i)+'" y1="'+PT+'" x2="'+x(i)+'" y2="'+(PT+innerH)+'" stroke="'+GRID+'" stroke-width="0.5" opacity="0.5"/>';
+    });
+    function series(getter, color){
+      var pts=[], out='';
+      days.forEach(function(ds,i){ var r=records[ds]; var v=getter(r); if(v!=null){ pts.push({x:x(i), y:y(v), v:v, ds:ds}); } });
+      if(pts.length>1){
+        out+='<polyline fill="none" stroke="'+color+'" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" points="'+pts.map(function(p){return p.x+','+p.y;}).join(' ')+'"/>';
+      }
+      pts.forEach(function(p){ out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="3.8" fill="'+color+'"><title>'+p.ds+' '+p.v+'</title></circle>'; });
+      return out;
+    }
+    if(key==='bp'){
+      svg+=series(function(r){return r? r.sys:null;}, panelMeta.bp.color);
+      svg+=series(function(r){return r? r.dia:null;}, panelMeta.bp.color2);
+    } else if(key==='steps'){
+      days.forEach(function(ds,i){ var r=records[ds]; if(r && r.steps!=null){ var bh=(r.steps-min)/(max-min)*innerH; svg+='<rect x="'+(x(i)-7)+'" y="'+(PT+innerH-bh)+'" width="14" height="'+bh+'" rx="3" fill="'+panelMeta.steps.color+'" opacity="0.85"><title>'+ds+' '+r.steps+'歩</title></rect>'; } });
+    } else {
+      svg+=series(function(r){return valueFor(key, r);}, panelMeta[key].color);
+    }
+    // 平均線（黒の破線）と目標線（緑の破線）
+    function hline(v, color, dash, label){
+      if(v==null || v<min || v>max) return '';
+      var yy=y(v);
+      return '<line x1="'+PL+'" y1="'+yy+'" x2="'+(W-PR)+'" y2="'+yy+'" stroke="'+color+'" stroke-width="1.6" stroke-dasharray="'+dash+'"/>'
+        +'<text x="'+(W-PR)+'" y="'+(yy-4)+'" text-anchor="end" font-size="10" font-weight="700" fill="'+color+'">'+label+'</text>';
+    }
+    if(key==='bp'){
+      svg+=hline(goals.sys, GOALC, '5 3', '目標 上');
+      svg+=hline(goals.dia, GOALC, '5 3', '目標 下');
+    } else {
+      svg+=hline(avgVal, GLABEL, '2 3', '平均');
+      svg+=hline(goalFor(key), GOALC, '5 3', '目標');
+    }
+    svg+='</svg>';
+    return svg;
+  }
+
+  // 週平均（直近7日）・月平均（直近30日）
+  function avgOf(key, daysArr, part){
+    var sum=0, c=0;
+    daysArr.forEach(function(ds){
+      var r=records[ds]; if(!r) return;
+      var v = key==='bp'? (part==='sys'? r.sys : r.dia) : valueFor(key, r);
+      if(v!=null){ sum+=v; c++; }
+    });
+    return c? sum/c : null;
+  }
+  function fmtAvg(v, key){
+    if(v==null) return '—';
+    if(key==='steps') return Math.round(v).toLocaleString('ja-JP');
+    if(key==='weight'||key==='sleep') return (Math.round(v*10)/10).toFixed(1);
+    return String(Math.round(v));
+  }
+  function renderAvgSummary(selected){
+    var box=$('avgSummary'); box.innerHTML='';
+    if(!selected.length) return;
+    var d7=[], d30=[], i;
+    for(i=6;i>=0;i--) d7.push(addDaysStr(todayStr(), -i));
+    for(i=29;i>=0;i--) d30.push(addDaysStr(todayStr(), -i));
+    var wrap=document.createElement('div'); wrap.className='avg-box';
+    selected.forEach(function(key){
+      var row=document.createElement('div');
+      var name=document.createElement('b'); name.textContent=panelMeta[key].title;
+      var txt=document.createElement('span');
+      if(key==='bp'){
+        txt.textContent='週平均 上 '+fmtAvg(avgOf('bp',d7,'sys'),'bp')+' / 下 '+fmtAvg(avgOf('bp',d7,'dia'),'bp')
+          +' ・ 月平均 上 '+fmtAvg(avgOf('bp',d30,'sys'),'bp')+' / 下 '+fmtAvg(avgOf('bp',d30,'dia'),'bp');
+      } else {
+        txt.textContent='週平均 '+fmtAvg(avgOf(key,d7),key)+' '+panelMeta[key].unit
+          +' ・ 月平均 '+fmtAvg(avgOf(key,d30),key)+' '+panelMeta[key].unit;
+      }
+      row.appendChild(name); row.appendChild(txt);
+      wrap.appendChild(row);
+    });
+    box.appendChild(wrap);
+  }
+
+  var syncing=false;
+  function renderGraph(){
+    var checkedSet={};
+    Array.prototype.forEach.call(checkEls, function(c){ if(c.checked) checkedSet[c.value]=true; });
+    var selected=graphOrder.filter(function(k){ return !!checkedSet[k]; });
+    var days=rangeDays();
+    var hasAny=days.some(function(ds){ return !!records[ds]; });
+    $('graphEmpty').classList.toggle('hidden', hasAny);
+    var area=$('graphArea'); area.innerHTML='';
+    if(!hasAny){ $('avgSummary').innerHTML=''; return; }
+    renderAvgSummary(selected);
+    selected.forEach(function(key, pos){
+      var panel=document.createElement('div'); panel.className='chart-panel';
+      var head=document.createElement('div'); head.className='chart-head';
+      var left=document.createElement('div'); left.className='head-left';
+      var strong=document.createElement('strong'); strong.textContent=panelMeta[key].title;
+      var unit=document.createElement('span'); unit.textContent=panelMeta[key].unit;
+      left.appendChild(strong); left.appendChild(unit);
+      head.appendChild(left);
+      var ord=document.createElement('div'); ord.className='ord-btns';
+      var upBtn=document.createElement('button'); upBtn.type='button'; upBtn.textContent='↑';
+      upBtn.setAttribute('aria-label', panelMeta[key].title+'を上へ移動');
+      upBtn.disabled = pos===0;
+      upBtn.addEventListener('click', function(){ moveGraph(key, -1); });
+      var downBtn=document.createElement('button'); downBtn.type='button'; downBtn.textContent='↓';
+      downBtn.setAttribute('aria-label', panelMeta[key].title+'を下へ移動');
+      downBtn.disabled = pos===selected.length-1;
+      downBtn.addEventListener('click', function(){ moveGraph(key, 1); });
+      ord.appendChild(upBtn); ord.appendChild(downBtn);
+      head.appendChild(ord);
+      panel.appendChild(head);
+      if(key==='bp'){
+        var leg=document.createElement('div'); leg.className='legend';
+        leg.innerHTML='<span><span class="dot" style="background:'+panelMeta.bp.color+'"></span>上</span><span><span class="dot" style="background:'+panelMeta.bp.color2+'"></span>下</span><span><span class="dot" style="background:'+ACCENT+'"></span>下段の ● = アルコールを飲んだ日</span><span>緑の破線 = 目標</span>';
+        panel.appendChild(leg);
+      } else {
+        var leg2=document.createElement('div'); leg2.className='legend';
+        leg2.innerHTML='<span><span class="dot" style="background:'+ACCENT+'"></span>下段の ● = アルコールを飲んだ日</span><span>黒の破線 = 平均</span><span>緑の破線 = 目標</span>';
+        panel.appendChild(leg2);
+      }
+      var sc=document.createElement('div'); sc.className='chart-scroll'; sc.innerHTML=buildChartSVG(key, days);
+      sc.addEventListener('scroll', function(){
+        if(syncing) return; syncing=true;
+        document.querySelectorAll('.chart-scroll').forEach(function(o){ if(o!==sc) o.scrollLeft=sc.scrollLeft; });
+        syncing=false;
+      });
+      panel.appendChild(sc);
+      area.appendChild(panel);
+    });
+  }
+
+  // CSV
+  function csvEscape(v){
+    if(v==null) return '';
+    var s=String(v);
+    if(/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
+    return s;
+  }
+  function toCSV(){
+    var header='date,weight_kg,bp_sys,bp_dia,bp_pulse,sleep_bed,sleep_wake,sleep_fell_asleep,steps,temp_c,drink,memo';
+    var lines=[header];
+    Object.keys(records).sort().forEach(function(date){
+      var r=records[date];
+      lines.push([r.date, r.weight!=null?r.weight:'', r.sys!=null?r.sys:'', r.dia!=null?r.dia:'', r.pulse!=null?r.pulse:'', r.fell?'':(r.bed||''), r.wake||'', r.fell?1:0, r.steps!=null?r.steps:'', r.temp!=null?r.temp:'', r.drink!=null?r.drink:'', r.memo||''].map(csvEscape).join(','));
+    });
+    return lines.join('\n')+'\n';
+  }
+  $('exportBtn').addEventListener('click', function(){
+    var csv=toCSV();
+    var blob=new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download='kumalog_'+todayStr()+'.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 500);
+    $('exportInfo').textContent='書き出しました ・ 記録 '+Object.keys(records).length+' 件';
+  });
+
+  function parseCSV(text){
+    var rows=[]; var i=0, cur='', row=[], inQ=false;
+    text=text.replace(/^\uFEFF/, '');
+    function pushCell(){ row.push(cur); cur=''; }
+    function pushRow(){ pushCell(); rows.push(row); row=[]; }
+    while(i<text.length){
+      var ch=text[i];
+      if(inQ){
+        if(ch==='"'){ if(text[i+1]==='"'){ cur+='"'; i+=2; continue; } inQ=false; i++; continue; }
+        cur+=ch; i++; continue;
+      }
+      if(ch==='"'){ inQ=true; i++; continue; }
+      if(ch===','){ pushCell(); i++; continue; }
+      if(ch==='\n'){ pushRow(); i++; continue; }
+      if(ch==='\r'){ i++; continue; }
+      cur+=ch; i++;
+    }
+    if(cur!=='' || row.length) pushRow();
+    return rows.filter(function(r){ return !(r.length===1 && r[0]===''); });
+  }
+
+  $('importFile').addEventListener('change', function(ev){
+    var file=ev.target.files && ev.target.files[0]; if(!file) return;
+    var reader=new FileReader();
+    reader.onload=function(){
+      try{
+        var rows=parseCSV(String(reader.result||''));
+        if(!rows.length) throw new Error('empty');
+        var header=rows[0].map(function(h){return h.trim();});
+        var idx={}; header.forEach(function(h,i){ idx[h]=i; });
+        if(idx['date']==null) throw new Error('no date column');
+        var count=0;
+        for(var ri=1; ri<rows.length; ri++){
+          var cols=rows[ri]; var date=(cols[idx['date']]||'').trim();
+          if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+          function get(name){ var j=idx[name]; return j==null? '' : (cols[j]||'').trim(); }
+          function validTime(v){ return /^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? v : ''; }
+          var fell=get('sleep_fell_asleep')==='1';
+          records[date]={
+            date:date,
+            weight:numOrNull(get('weight_kg')),
+            sys:numOrNull(get('bp_sys')),
+            dia:numOrNull(get('bp_dia')),
+            pulse:numOrNull(get('bp_pulse')),
+            bed: fell? '' : validTime(get('sleep_bed')),
+            wake: validTime(get('sleep_wake')),
+            fell:fell,
+            steps:numOrNull(get('steps')),
+            temp:numOrNull(get('temp_c')),
+            drink: get('drink')===''? null : Number(get('drink')),
+            memo:get('memo')
+          };
+          count++;
+        }
+        persist();
+        $('importToast').style.color='var(--chip-good)';
+        $('importToast').textContent='✓ '+count+' 件を読み込みました（合計 '+Object.keys(records).length+' 件）';
+        updateCounts(); loadForDate(); renderHistory(); renderGraph();
+      }catch(e){
+        $('importToast').style.color='var(--chip-bad)';
+        $('importToast').textContent='読み込めませんでした。くまログ形式のCSVか確認してください。';
+      }
+      ev.target.value='';
+    };
+    reader.readAsText(file, 'UTF-8');
+  });
+
+  // 目標の保存（データタブ）
+  $('goalSaveBtn').addEventListener('click', function(){
+    goals.weight = numOrNull($('goalWeight').value);
+    goals.sleep = numOrNull($('goalSleep').value);
+    goals.sys = numOrNull($('goalSys').value);
+    goals.dia = numOrNull($('goalDia').value);
+    goals.steps = numOrNull($('goalSteps').value);
+    persistGoals();
+    applyGoalHints();
+    $('goalToast').style.color='var(--chip-good)';
+    $('goalToast').textContent='✓ 目標を保存しました';
+  });
+
+  // 入力欄をタップしたら、キーボードに隠れない位置まで自動でスクロールする
+  // （目標の入力欄が画面下端でキーボードに隠れ、数値を確認できない問題への対処）
+  document.addEventListener('focusin', function(e){
+    var t=e.target;
+    if(!t || (t.tagName!=='INPUT' && t.tagName!=='TEXTAREA' && t.tagName!=='SELECT')) return;
+    if(t.type==='file' || t.type==='checkbox') return;
+    setTimeout(function(){
+      try{ t.scrollIntoView({behavior:'smooth', block:'center'}); }
+      catch(err){ t.scrollIntoView(); }
+    }, 350);
+  });
+
+  // init
+  restore();
+  restoreGoals();
+  restoreOrder();
+  restoreRecOrder();
+  initRecBlocks();
+  applyRecOrder();
+  fillGoalInputs();
+  applyGoalHints();
+  if(!storageOK){
+    var note=$('storageNote');
+    if(note){ note.textContent='このブラウザでは端末内への保存が使えないため、記録は開いている間のみ保持されます。閉じる前に「データ」タブから CSV で書き出してください。'; note.classList.remove('hidden'); }
+  }
+  paintDrink(); paintRange(); updateDuration(); updateCounts(); renderHistory(); loadForDate();
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
