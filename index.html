@@ -429,6 +429,10 @@
           <input type="file" id="importFile" accept=".csv,text/csv" class="file-input" />
           <div class="toast" id="importToast"></div>
         </div>
+        <div>
+          <button class="btn" id="syncBtn" type="button">クマと連携（睡眠・歩数）</button>
+          <div class="toast" id="syncToast"></div>
+        </div>
       </div>
     </div>
     <div class="card">
@@ -541,6 +545,7 @@
         <summary>CSVの形式</summary>
         <div class="fold-body">
           <p>CSVは Excel やスプレッドシートで開ける形式です。読み込みは、日付が同じ記録を上書きし、違う日付は追加します。くまログで書き出したCSV、そのまま読み込めます。クマが用意した取り込み用CSVも同じ形式です。</p>
+          <p>「クマと連携（睡眠・歩数）」ボタンは、クマが時計から読み取った睡眠と歩数を、押すだけで取り込むためのものです。体重・血圧など、他の欄には触りません。取り込むデータは一時的な置き場に置かれ、取り込むと消えます。置き場に何も無いときは「取り込むものはありませんでした」と表示されます。</p>
           <div class="csv-format"><code>date,weight_kg,bp_sys,bp_dia,bp_pulse,sleep_bed,sleep_wake,sleep_fell_asleep,steps,temp_c,drink,memo
 2026-11-09,68.4,128,82,72,23:30,06:45,0,8420,36.5,1,よく眠れた
 2026-11-08,68.7,132,85,,,06:30,1,6200,,1,寝落ちした日</code></div>
@@ -1252,6 +1257,37 @@
       ev.target.value='';
     };
     reader.readAsText(file, 'UTF-8');
+  });
+
+  // クマと連携（睡眠・歩数の一時置き場から取り込む。体重・血圧など他の欄には触らない）
+  var SYNC_FETCH_URL='https://kumalog-sync.anshin-syukatu.workers.dev/a7f3c9e2/fetch';
+  $('syncBtn').addEventListener('click', function(){
+    if(!window.confirm('クマから睡眠と歩数を取り込みますか？')) return;
+    var toast=$('syncToast');
+    toast.style.color='';
+    toast.textContent='取り込み中…';
+    fetch(SYNC_FETCH_URL).then(function(res){ return res.json(); }).then(function(data){
+      var list=(data && data.records) || [];
+      if(!list.length){ toast.textContent='取り込むものはありませんでした'; return; }
+      var count=0;
+      list.forEach(function(r){
+        if(!r || !/^\d{4}-\d{2}-\d{2}$/.test(r.date||'')) return;
+        var rec=records[r.date] || {date:r.date, weight:null, sys:null, dia:null, pulse:null, bed:'', wake:'', fell:false, steps:null, temp:null, drink:null, memo:''};
+        if(r.sleep_fell_asleep===1 || r.sleep_fell_asleep==='1'){ rec.fell=true; rec.bed=''; }
+        else if(r.sleep_bed){ rec.fell=false; rec.bed=r.sleep_bed; }
+        if(r.sleep_wake){ rec.wake=r.sleep_wake; }
+        if(r.steps!=null && r.steps!==''){ rec.steps=Number(r.steps); }
+        records[r.date]=rec;
+        count++;
+      });
+      persist();
+      toast.style.color='var(--chip-good)';
+      toast.textContent='✓ 睡眠と歩数を '+count+' 件取り込みました';
+      updateCounts(); loadForDate(); renderHistory(); renderGraph();
+    }).catch(function(){
+      toast.style.color='var(--chip-bad)';
+      toast.textContent='取り込めませんでした。通信の状態を確認してください。';
+    });
   });
 
   // 目標の保存（データタブ）
