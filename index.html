@@ -899,7 +899,7 @@
     $('toast').style.color='var(--chip-good)';
     $('toast').textContent='✓ '+fmtDateJP(r.date)+' の記録を保存しました（'+Object.keys(records).length+'件）';
     $('baselineChip').classList.remove('on');
-    updateCounts();
+    updateCounts(); renderHistory(); renderGraph();
   });
 
   function updateCounts(){
