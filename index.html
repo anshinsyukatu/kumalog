@@ -350,7 +350,7 @@
         <div class="rec-head"><span class="rec-title">歩数・アルコール</span></div>
       <div class="grid2 keep2">
         <div class="field">
-          <label for="stepsInput">歩数<span class="goal-hint" id="goalHintSteps"></span></label>
+          <label for="stepsInput">歩数（前日の分）<span class="goal-hint" id="goalHintSteps"></span></label>
           <input type="number" id="stepsInput" class="num-lg" inputmode="numeric" step="1" min="0" placeholder="—" />
         </div>
         <div class="field">
@@ -492,6 +492,7 @@
         <div class="fold-body">
           <p>くまログでは、時計やヘルスケアアプリとの自動連携はしていません。体重・血圧を入力しても、睡眠と歩数は自動では反映されません。</p>
           <p>睡眠と歩数は、「記録」タブで手入力するか、CSVでまとめて取り込めます。過去の分もCSVを用意すれば日付ごとに取り込めます（同じ日付の記録は上書きされます）。</p>
+          <p>歩数を手入力するときの注意：歩数欄の数字は「前日の分」として、前日の記録に入ります。朝、昨日の歩数を入れる使い方で日付を取り違えないためです。</p>
         </div>
       </details>
 
@@ -835,16 +836,26 @@
     return all.length? records[all[all.length-1]] : null;
   }
 
+  // 日付文字列（YYYY-MM-DD）の前日を返す
+  function prevDateStr(dateStr){
+    var dt=new Date(dateStr+'T00:00:00');
+    dt.setDate(dt.getDate()-1);
+    var m=('0'+(dt.getMonth()+1)).slice(-2), dd=('0'+dt.getDate()).slice(-2);
+    return dt.getFullYear()+'-'+m+'-'+dd;
+  }
+
   function loadForDate(){
     var d=$('dateInput').value; var r=records[d];
     clearForm();
+    // 歩数欄は「前日の分」：前日の記録の歩数を表示する（手入力の歩数は前日の記録に入る仕様）
+    var pr0=records[prevDateStr(d)];
+    if(pr0 && pr0.steps!=null) $('stepsInput').value=pr0.steps;
     if(r){
       if(r.weight!=null) $('weightInput').value=r.weight;
       if(r.temp!=null) $('tempInput').value=r.temp;
       if(r.sys!=null) $('sysInput').value=r.sys;
       if(r.dia!=null) $('diaInput').value=r.dia;
       if(r.pulse!=null) $('pulseInput').value=r.pulse;
-      if(r.steps!=null) $('stepsInput').value=r.steps;
       if(r.memo) $('memoInput').value=r.memo;
       if(r.wake) $('wakeInput').value=r.wake;
       fellAsleep=!!r.fell;
@@ -879,7 +890,8 @@
       sys: numOrNull($('sysInput').value),
       dia: numOrNull($('diaInput').value),
       pulse: numOrNull($('pulseInput').value),
-      steps: numOrNull($('stepsInput').value),
+      // 歩数はこの日の記録には入れない（手入力分は前日の記録へ。連携で入った当日の歩数だけ保持する）
+      steps: (records[date] && records[date].steps!=null)? records[date].steps : null,
       bed: fellAsleep? '' : $('bedInput').value,
       wake: $('wakeInput').value,
       fell: fellAsleep,
@@ -893,11 +905,19 @@
 
   $('saveBtn').addEventListener('click', function(){
     var r=collect(); if(!r){ $('toast').textContent='日付を選んでください。'; return; }
-    if(isEmpty(r)){ $('toast').textContent='何か1つ入力してから保存してください。'; $('toast').style.color='var(--chip-bad)'; return; }
-    records[r.date]=r;
+    var fs=numOrNull($('stepsInput').value); // 歩数欄の数字は「前日の分」
+    if(isEmpty(r) && fs==null){ $('toast').textContent='何か1つ入力してから保存してください。'; $('toast').style.color='var(--chip-bad)'; return; }
+    if(!isEmpty(r)) records[r.date]=r;
+    // 手入力の歩数は前日の記録へ（朝に昨日の歩数を入れる使い方で、日付を取り違えないため）
+    var pd=prevDateStr(r.date);
+    if(fs!=null || records[pd]){
+      var pr=records[pd] || {date:pd, weight:null, temp:null, sys:null, dia:null, pulse:null, bed:'', wake:'', fell:false, steps:null, drink:null, memo:''};
+      pr.steps=fs;
+      if(isEmpty(pr)){ delete records[pd]; } else { records[pd]=pr; }
+    }
     persist();
     $('toast').style.color='var(--chip-good)';
-    $('toast').textContent='✓ '+fmtDateJP(r.date)+' の記録を保存しました（'+Object.keys(records).length+'件）';
+    $('toast').textContent='✓ '+fmtDateJP(r.date)+' の記録を保存しました（'+Object.keys(records).length+'件）'+(fs!=null? '／歩数は '+fmtDateJP(pd)+' 分として保存':'');
     $('baselineChip').classList.remove('on');
     updateCounts(); renderHistory(); renderGraph();
   });
