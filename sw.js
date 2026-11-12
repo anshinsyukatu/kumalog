@@ -6,7 +6,7 @@
  */
 "use strict";
 
-var CACHE_VERSION = "v3";
+var CACHE_VERSION = "v4";
 var CACHE_NAME = "kumalog-cache-" + CACHE_VERSION;
 
 var PRECACHE_URLS = [
@@ -39,6 +39,9 @@ self.addEventListener("activate", function (event) {
 
 self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") return;
+  // 別ドメインへの通信（くまログ連携の置き場など）はキャッシュを通さず、必ず実通信させる。
+  // ここを通すと、最初に取り込んだ連携データがキャッシュに残り、次回以降も同じ古い分が返ってしまう。
+  if (new URL(event.request.url).origin !== self.location.origin) return;
   event.respondWith(
     caches.match(event.request).then(function (cached) {
       if (cached) return cached;

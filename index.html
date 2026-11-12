@@ -1266,7 +1266,7 @@
     var toast=$('syncToast');
     toast.style.color='';
     toast.textContent='取り込み中…';
-    fetch(SYNC_FETCH_URL).then(function(res){ return res.json(); }).then(function(data){
+    fetch(SYNC_FETCH_URL, {cache:'no-store'}).then(function(res){ return res.json(); }).then(function(data){
       var list=(data && data.records) || [];
       if(!list.length){ toast.textContent='取り込むものはありませんでした'; return; }
       var count=0;
