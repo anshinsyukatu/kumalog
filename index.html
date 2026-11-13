@@ -90,7 +90,7 @@
 
   /* form */
   .date-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .date-row input[type="date"]{flex:1;min-width:150px}
+  .date-row input[type="date"]{flex:0 1 auto;width:auto;min-width:0}
   input[type="date"],input[type="time"],input[type="number"],input[type="month"],select,textarea{
     background:var(--card-field);color:var(--card-text);border:1px solid var(--card-line);border-radius:8px;padding:8px 10px;min-height:48px;width:100%;min-width:0;
   }
@@ -100,13 +100,11 @@
   label{font-size:13.5px;font-weight:800;color:var(--card-text);display:block;margin-bottom:4px}
   input,textarea,select{scroll-margin-top:76px;scroll-margin-bottom:110px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  /* スマホでも2列を保つ組（.keep2）は縦に積まず、間隔とボタンを詰めて並べる */
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  /* スマホでも2列を保つ組（.keep2）は縦に積まず、間隔を詰めて並べる */
   @media(max-width:520px){
     .grid2:not(.keep2){grid-template-columns:1fr}
     .grid2.keep2{gap:8px}
-    .grid2.keep2 .stepper{gap:6px}
-    .grid2.keep2 .stepper button{flex-basis:42px}
-    .grid2.keep2 .stepper input{font-size:17px}
     .grid2.keep2 .num-lg{font-size:17px}
   }
   .field{margin-bottom:12px}
@@ -120,20 +118,15 @@
   .rec-head .ord-btns button{width:30px;height:30px;font-size:13px;border-radius:7px}
   /* データタブ：目標の入力欄をタップしたとき、キーボードの上までスクロールできるよう下に余白を作る */
   #panel-data{padding-bottom:55vh}
-  /* チップは固定色セット（カードと同じくダークモードでも反転させない） */
-  .baseline-chip{display:none;font-size:11px;font-weight:800;color:#6E5600;background:#FFF3CD;border:1px solid #E3C86B;border-radius:999px;padding:3px 8px;vertical-align:middle;white-space:nowrap}
-  .baseline-chip.on{display:inline-block}
-  /* 「前回の値を表示中」は見出し行の一番右に置く */
-  .title-row .baseline-chip{margin-left:auto;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
-
-  /* ステッパー（＋/−が主役、直接入力は補助） */
-  .stepper{display:flex;gap:8px;align-items:stretch}
-  .stepper button{flex:0 0 48px;min-height:48px;border-radius:10px;border:1px solid var(--card-line);background:var(--card-btn);color:var(--card-text);font-size:22px;font-weight:800;line-height:1}
-  .stepper button:active{background:var(--card-btn-hover)}
-  .stepper input{flex:1;text-align:center;font-size:19px;font-weight:800;min-height:48px}
-  .unit{font-size:12px;color:var(--card-sub);text-align:center;margin-top:2px}
-  /* 歩数などステッパーなしの数値欄も、体重欄と同じ見た目・サイズに統一 */
+  /* 数値欄は体重欄と同じ見た目・サイズに統一（直接入力） */
   .num-lg{text-align:center;font-size:19px;font-weight:800;height:48px}
+  /* 入力欄の右に置く小さな単位・目標（2段組み、高さ48pxに収める） */
+  .with-side{display:flex;gap:8px;align-items:stretch}
+  .with-side input{flex:1}
+  .side-note{display:flex;flex-direction:column;justify-content:center;gap:1px;min-width:44px;font-size:12px;font-weight:700;color:var(--card-sub);line-height:1.25}
+  .side-note b{font-size:14px;color:var(--card-text)}
+  /* 日付行の並び替えボタンは「今日」「昨日」の右に横並び */
+  .date-row .ord-btns{align-items:center}
 
   .sleep-box{background:var(--card-field);border:1px solid var(--card-line);border-radius:10px;padding:10px}
   .btn-wake{width:100%;margin-top:8px;background:var(--accent);border:1px solid var(--accent);color:#fff;border-radius:10px;padding:8px 10px;font-weight:800;font-size:15px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:6px}
@@ -180,8 +173,8 @@
   .range-row{display:flex;gap:8px;margin:2px 0 12px}
   .range-row button{flex:1;padding:10px;border-radius:10px;border:1px solid var(--card-line);background:var(--card-field);color:var(--card-text);font-weight:700}
   .range-row button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-  .checks{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
-  .check{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--card-line);border-radius:999px;padding:8px 12px;background:var(--card-field);font-size:14px;font-weight:700;cursor:pointer;user-select:none}
+  .checks{display:flex;flex-wrap:nowrap;gap:6px;margin:0 0 12px}
+  .check{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--card-line);border-radius:999px;padding:7px 9px;background:var(--card-field);font-size:13px;font-weight:700;cursor:pointer;user-select:none;white-space:nowrap;flex:0 1 auto;min-width:0}
   .check input{accent-color:var(--accent);width:18px;height:18px;margin:0}
   .chart-panel{border:1px solid var(--card-line);border-radius:10px;overflow:hidden;margin-bottom:12px;background:var(--card-field)}
   .chart-head{display:flex;justify-content:space-between;align-items:center;padding:10px 12px 6px;gap:8px}
@@ -235,7 +228,7 @@
 
   <!-- 保存先の一文（控えめに。詳しくは「説明」タブの「記録の保存について」） -->
   <p class="storage-line">記録はこの端末の中だけに保存されます。機種変更やブラウザのデータ消去で消えることがあります。</p>
-  <p class="storage-line">いま表示している版：<b>v6</b>（歩数は「前日の分」版）</p>
+  <p class="storage-line">いま表示している版：<b>v7</b>（入力すっきり版）</p>
   <p class="storage-line hidden" id="storageNote"></p>
 
   <nav class="tabs" role="tablist" aria-label="くまログ">
@@ -252,13 +245,11 @@
       <div class="title-row">
         <h2>今日の記録</h2>
         <p class="lede">入れたいものだけでOK!</p>
-        <span class="baseline-chip" id="baselineChip">前回の値を表示中</span>
       </div>
       <div id="recBlocks">
       <div class="rec-block" data-rkey="date">
-        <div class="rec-head"><span class="rec-title"><label for="dateInput">日付</label></span></div>
         <div class="date-row">
-          <input type="date" id="dateInput" />
+          <input type="date" id="dateInput" aria-label="日付" />
           <button class="btn" id="todayBtn" type="button">今日</button>
           <button class="btn" id="yesterdayBtn" type="button">昨日</button>
         </div>
@@ -293,66 +284,38 @@
       </div>
 
       <div class="rec-block" data-rkey="weight">
-        <div class="rec-head"><span class="rec-title">体重・体温</span></div>
       <div class="grid2 keep2">
         <div class="field">
-          <label for="weightInput">体重（kg）<span class="goal-hint" id="goalHintWeight"></span></label>
-          <div class="stepper">
-            <button type="button" data-step="weight:-0.1" aria-label="体重を0.1減らす">−</button>
-            <input type="number" id="weightInput" inputmode="decimal" step="0.1" min="20" max="250" placeholder="—" />
-            <button type="button" data-step="weight:0.1" aria-label="体重を0.1増やす">＋</button>
+          <div class="with-side">
+            <input type="number" id="weightInput" class="num-lg" inputmode="decimal" step="0.1" min="20" max="250" placeholder="体重" aria-label="体重" />
+            <div class="side-note"><b>kg</b><span id="sideGoalWeight">目標 —</span></div>
           </div>
         </div>
         <div class="field">
-          <label for="tempInput">体温（℃）</label>
-          <div class="stepper">
-            <button type="button" data-step="temp:-0.1" aria-label="体温を0.1下げる">−</button>
-            <input type="number" id="tempInput" inputmode="decimal" step="0.1" min="30" max="43" placeholder="—" />
-            <button type="button" data-step="temp:0.1" aria-label="体温を0.1上げる">＋</button>
+          <div class="with-side">
+            <input type="number" id="tempInput" class="num-lg" inputmode="decimal" step="0.1" min="30" max="43" placeholder="体温" aria-label="体温" />
+            <div class="side-note"><b>℃</b></div>
           </div>
         </div>
       </div>
       </div>
 
       <div class="rec-block" data-rkey="bp">
-        <div class="rec-head"><span class="rec-title">血圧（mmHg）<span class="goal-hint" id="goalHintBp"></span></span></div>
-        <div class="grid2 keep2">
-          <div>
-            <div class="stepper">
-              <button type="button" data-step="sys:-1" aria-label="上の血圧を下げる">−</button>
-              <input type="number" id="sysInput" inputmode="numeric" step="1" min="50" max="260" placeholder="上" />
-              <button type="button" data-step="sys:1" aria-label="上の血圧を上げる">＋</button>
-            </div>
-            <div class="unit">上</div>
-          </div>
-          <div>
-            <div class="stepper">
-              <button type="button" data-step="dia:-1" aria-label="下の血圧を下げる">−</button>
-              <input type="number" id="diaInput" inputmode="numeric" step="1" min="30" max="180" placeholder="下" />
-              <button type="button" data-step="dia:1" aria-label="下の血圧を上げる">＋</button>
-            </div>
-            <div class="unit">下</div>
-          </div>
-        </div>
-        <div class="grid2 keep2" style="margin-top:10px">
-          <div>
-            <div class="stepper">
-              <button type="button" data-step="pulse:-1" aria-label="脈拍を下げる">−</button>
-              <input type="number" id="pulseInput" inputmode="numeric" step="1" min="30" max="220" placeholder="脈拍" />
-              <button type="button" data-step="pulse:1" aria-label="脈拍を上げる">＋</button>
-            </div>
-            <div class="unit">脈拍（回/分）</div>
-          </div>
-          <div></div>
+        <div class="grid3">
+          <input type="number" id="sysInput" class="num-lg" inputmode="numeric" step="1" min="50" max="260" placeholder="上" aria-label="血圧・上" />
+          <input type="number" id="diaInput" class="num-lg" inputmode="numeric" step="1" min="30" max="180" placeholder="下" aria-label="血圧・下" />
+          <input type="number" id="pulseInput" class="num-lg" inputmode="numeric" step="1" min="30" max="220" placeholder="脈拍" aria-label="脈拍" />
         </div>
       </div>
 
       <div class="rec-block" data-rkey="steps">
-        <div class="rec-head"><span class="rec-title">歩数・アルコール</span></div>
       <div class="grid2 keep2">
         <div class="field">
-          <label for="stepsInput">歩数（前日の分）<span class="goal-hint" id="goalHintSteps"></span></label>
-          <input type="number" id="stepsInput" class="num-lg" inputmode="numeric" step="1" min="0" placeholder="—" />
+          <label for="stepsInput">歩数（前日の分）</label>
+          <div class="with-side">
+            <input type="number" id="stepsInput" class="num-lg" inputmode="numeric" step="1" min="0" placeholder="—" />
+            <div class="side-note"><b>歩</b><span id="sideGoalSteps">目標 —</span></div>
+          </div>
         </div>
         <div class="field">
           <label>アルコール</label>
@@ -431,7 +394,8 @@
           <div class="toast" id="importToast"></div>
         </div>
         <div>
-          <button class="btn" id="syncBtn" type="button">クマと連携（睡眠・歩数）</button>
+          <button class="btn" id="syncBtn" type="button">睡眠・歩数を取り込む</button>
+          <p class="small" style="margin:6px 0 0">時計などと連携している場合のみ使えます。取り込むものが無いときは、そのように表示されます。</p>
           <div class="toast" id="syncToast"></div>
         </div>
       </div>
@@ -509,9 +473,9 @@
         <div class="fold-body">
           <ul>
             <li>全部埋めなくて大丈夫です。分かる項目だけ記録してください。同じ日付で保存すると上書きされます。</li>
-            <li>記録タブの項目（日付・睡眠・体重・体温・血圧・歩数・アルコール・メモ）は、各項目の右上の ↑ ↓ ボタンで並び替えられます。順番はこの端末に保存されます。</li>
-            <li>体重・血圧・脈拍・体温は、前回の記録の値が最初に表示されます。＋／−ボタンで調整するだけでも記録できます。数字を直接タップして書き換えることもできます。初めての記録だけは、数字を直接入力してください。</li>
-            <li>脈拍は血圧の下の欄です。測っていない日は空欄のままで大丈夫です。</li>
+            <li>記録タブの項目（日付・睡眠・体重・体温・血圧・歩数・アルコール・メモ）は、各項目の右上の ↑ ↓ ボタンで並び替えられます（日付は「今日」「昨日」の右のボタン）。順番はこの端末に保存されます。</li>
+            <li>体重・体温・血圧・脈拍は、数字を直接入力してください。未記録の日は空欄で表示されます（前回の値が自動で入ることはありません）。</li>
+            <li>血圧は 上・下・脈拍 の順に横に並んでいます。測っていない項目は空欄のままで大丈夫です。</li>
             <li>睡眠は、起きたら「今起きた！」を押すだけで起きた時刻が入ります。寝た時刻はだいたいで大丈夫です。</li>
             <li>寝た時刻が分からない日は「寝落ちした」を選んでください。時刻なしで記録でき、睡眠時間は「時刻不明」として扱われます。</li>
             <li>睡眠時間は推定です。正確さよりも、「飲んだ日は血圧が高めかも」のような関係に気づくことを目的にしています。</li>
@@ -537,6 +501,20 @@
       </details>
 
       <details class="note-fold">
+        <summary>更新履歴</summary>
+        <div class="fold-body">
+          <ul>
+            <li><b>v7</b>：＋／−ボタンと前回の値の自動表示をやめ、直接入力に統一。血圧を横一列に。連携ボタンの名称を変更。タブ切り替えは先頭から表示。グラフは明日までの範囲で右端から表示。日付まわりを小さく整理</li>
+            <li><b>v6</b>：いま表示している版の表示を追加。画面の更新が届きやすく</li>
+            <li><b>v5</b>：歩数の手入力を「前日の分」として前日の記録に入れるよう変更</li>
+            <li><b>v4</b>：連携で古いデータが返ってくる問題を修正</li>
+            <li><b>v2</b>：睡眠と歩数を外部から取り込む連携機能を追加</li>
+            <li><b>v1</b>：初版。体重・血圧・睡眠などの記録、グラフ、CSV書き出し・読み込み</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="note-fold">
         <summary>履歴の編集・削除</summary>
         <div class="fold-body">
           <p>履歴の鉛筆ボタンで、その日の記録を「記録」タブに読み込んで直せます。ゴミ箱ボタンでその日の記録を削除できます。</p>
@@ -547,7 +525,7 @@
         <summary>CSVの形式</summary>
         <div class="fold-body">
           <p>CSVは Excel やスプレッドシートで開ける形式です。読み込みは、日付が同じ記録を上書きし、違う日付は追加します。くまログで書き出したCSV、そのまま読み込めます。クマが用意した取り込み用CSVも同じ形式です。</p>
-          <p>「クマと連携（睡眠・歩数）」ボタンは、クマが時計から読み取った睡眠と歩数を、押すだけで取り込むためのものです。体重・血圧など、他の欄には触りません。取り込むデータは一時的な置き場に置かれ、取り込むと消えます。置き場に何も無いときは「取り込むものはありませんでした」と表示されます。</p>
+          <p>「睡眠・歩数を取り込む」ボタンは、クマが時計から読み取った睡眠と歩数を、押すだけで取り込むためのものです（時計などと連携している場合のみ使えます）。体重・血圧など、他の欄には触りません。取り込むデータは一時的な置き場に置かれ、取り込むと消えます。置き場に何も無いときは「取り込むものはありませんでした」と表示されます。</p>
           <div class="csv-format"><code>date,weight_kg,bp_sys,bp_dia,bp_pulse,sleep_bed,sleep_wake,sleep_fell_asleep,steps,temp_c,drink,memo
 2026-11-09,68.4,128,82,72,23:30,06:45,0,8420,36.5,1,よく眠れた
 2026-11-08,68.7,132,85,,,06:30,1,6200,,1,寝落ちした日</code></div>
@@ -642,10 +620,10 @@
     $('goalSteps').value = goals.steps!=null? goals.steps : '';
   }
   function applyGoalHints(){
-    $('goalHintWeight').textContent = goals.weight!=null? '目標 '+goals.weight+' kg' : '';
-    $('goalHintSleep').textContent = goals.sleep!=null? '目標 '+goals.sleep+' 時間' : '';
-    $('goalHintSteps').textContent = goals.steps!=null? '目標 '+Number(goals.steps).toLocaleString('ja-JP')+' 歩' : '';
-    $('goalHintBp').textContent = (goals.sys!=null||goals.dia!=null)? '目標 '+(goals.sys!=null?goals.sys:'—')+' / '+(goals.dia!=null?goals.dia:'—') : '';
+    // 記録タブでは、入力欄の右の小さな表示に目標を出す（体重・歩数）
+    $('sideGoalWeight').textContent = goals.weight!=null? '目標 '+goals.weight : '目標 —';
+    $('sideGoalSteps').textContent = goals.steps!=null? '目標 '+Number(goals.steps).toLocaleString('ja-JP') : '目標 —';
+    var sh=$('goalHintSleep'); if(sh) sh.textContent = goals.sleep!=null? '目標 '+goals.sleep+' 時間' : '';
   }
 
   var drinkState = null; // true, false, null
@@ -714,7 +692,6 @@
   }
   function initRecBlocks(){
     Array.prototype.forEach.call(document.querySelectorAll('.rec-block'), function(b){
-      var head=b.querySelector('.rec-head'); if(!head) return;
       var key=b.dataset.rkey;
       var ord=document.createElement('span'); ord.className='ord-btns';
       var up=document.createElement('button'); up.type='button'; up.textContent='↑';
@@ -724,7 +701,12 @@
       down.setAttribute('aria-label', (recNames[key]||key)+'を下へ移動');
       down.addEventListener('click', function(){ moveRec(key, 1); });
       ord.appendChild(up); ord.appendChild(down);
-      head.appendChild(ord);
+      if(key==='date'){
+        // 日付ブロックは見出しを持たないので、「今日」「昨日」の右に置く
+        var row=b.querySelector('.date-row'); if(row) row.appendChild(ord);
+      } else {
+        var head=b.querySelector('.rec-head'); if(head) head.appendChild(ord);
+      }
     });
   }
 
@@ -772,6 +754,8 @@
       });
       if(btn.dataset.tab==='graph') renderGraph();
       if(btn.dataset.tab==='history') renderHistory();
+      // タブを切り替えたら、必ず一番上から表示する
+      window.scrollTo(0, 0);
     });
   });
 
@@ -796,21 +780,6 @@
     updateDuration();
   });
 
-  // Steppers：前回値（または入力済みの値）を ＋/− で調整するのが基本。
-  // 空欄（初回）では何もしない＝直接入力してもらう。
-  document.querySelectorAll('[data-step]').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var parts=btn.dataset.step.split(':'); var key=parts[0]; var delta=Number(parts[1]);
-      var map={weight:'weightInput', temp:'tempInput', sys:'sysInput', dia:'diaInput', pulse:'pulseInput'};
-      var input=$(map[key]); if(!input) return;
-      var cur=numOrNull(input.value);
-      if(cur==null){ input.focus(); return; }
-      var next=Math.round((cur+delta)*10)/10;
-      input.value = (key==='sys'||key==='dia'||key==='pulse') ? String(Math.round(next)) : next.toFixed(1);
-      input.dispatchEvent(new Event('change'));
-    });
-  });
-
   // Drink toggle
   function paintDrink(){
     $('drinkYes').classList.toggle('sel-yes', drinkState===true);
@@ -824,18 +793,9 @@
     $('stepsInput').value=''; $('memoInput').value=''; $('bedInput').value=''; $('wakeInput').value='';
     drinkState=null; fellAsleep=false;
     $('fellBtn').classList.remove('active'); $('fellBtn').setAttribute('aria-pressed','false'); $('bedInput').disabled=false;
-    $('baselineChip').classList.remove('on');
     paintDrink(); updateDuration();
   }
   $('clearBtn').addEventListener('click', function(){ clearForm(); $('toast').textContent=''; });
-
-  // その日より前の直近の記録（基本初期値の元）
-  function baselineFor(date){
-    var dates=Object.keys(records).filter(function(d){ return d<date; }).sort();
-    if(dates.length) return records[dates[dates.length-1]];
-    var all=Object.keys(records).filter(function(d){ return d!==date; }).sort();
-    return all.length? records[all[all.length-1]] : null;
-  }
 
   // 日付文字列（YYYY-MM-DD）の前日を返す
   function prevDateStr(dateStr){
@@ -868,17 +828,7 @@
       paintDrink(); updateDuration();
       return;
     }
-    // 未記録の日：前回の値を基本初期値として表示し、＋/−で調整できるようにする
-    var base=baselineFor(d);
-    if(base){
-      var applied=false;
-      if(base.weight!=null){ $('weightInput').value=base.weight; applied=true; }
-      if(base.temp!=null){ $('tempInput').value=base.temp; applied=true; }
-      if(base.sys!=null){ $('sysInput').value=base.sys; applied=true; }
-      if(base.dia!=null){ $('diaInput').value=base.dia; applied=true; }
-      if(base.pulse!=null){ $('pulseInput').value=base.pulse; applied=true; }
-      if(applied) $('baselineChip').classList.add('on');
-    }
+    // 未記録の日：前回の値は入れず、空欄のまま表示する（入れたかどうか分かりにくくならないように）
   }
 
   function collect(){
@@ -911,15 +861,15 @@
     if(!isEmpty(r)) records[r.date]=r;
     // 手入力の歩数は前日の記録へ（朝に昨日の歩数を入れる使い方で、日付を取り違えないため）
     var pd=prevDateStr(r.date);
-    if(fs!=null || records[pd]){
+    // 歩数欄に数字があるときだけ前日の歩数を書き換える。空欄の保存で、連携で入った歩数を消さないため
+    if(fs!=null){
       var pr=records[pd] || {date:pd, weight:null, temp:null, sys:null, dia:null, pulse:null, bed:'', wake:'', fell:false, steps:null, drink:null, memo:''};
       pr.steps=fs;
-      if(isEmpty(pr)){ delete records[pd]; } else { records[pd]=pr; }
+      records[pd]=pr;
     }
     persist();
     $('toast').style.color='var(--chip-good)';
     $('toast').textContent='✓ '+fmtDateJP(r.date)+' の記録を保存しました（'+Object.keys(records).length+'件）'+(fs!=null? '／歩数は '+fmtDateJP(pd)+' 分として保存':'');
-    $('baselineChip').classList.remove('on');
     updateCounts(); renderHistory(); renderGraph();
   });
 
@@ -1008,7 +958,8 @@
     $('range30').setAttribute('aria-pressed', String(graphDays===30));
   }
   function rangeDays(){
-    var end=todayStr(); var arr=[];
+    // 右端は「明日」まで（期間の長さは graphDays 日分のまま、開始を1日前にずらす）
+    var end=addDaysStr(todayStr(), 1); var arr=[];
     for(var i=graphDays-1;i>=0;i--) arr.push(addDaysStr(end, -i));
     return arr;
   }
@@ -1177,6 +1128,8 @@
         panel.appendChild(leg2);
       }
       var sc=document.createElement('div'); sc.className='chart-scroll'; sc.innerHTML=buildChartSVG(key, days);
+      // 描画後は一番右（最新＝明日側）までスクロールした状態で始める
+      sc.scrollLeft = sc.scrollWidth;
       sc.addEventListener('scroll', function(){
         if(syncing) return; syncing=true;
         document.querySelectorAll('.chart-scroll').forEach(function(o){ if(o!==sc) o.scrollLeft=sc.scrollLeft; });
@@ -1280,7 +1233,7 @@
     reader.readAsText(file, 'UTF-8');
   });
 
-  // クマと連携（睡眠・歩数の一時置き場から取り込む。体重・血圧など他の欄には触らない）
+  // 睡眠・歩数を取り込む（一時置き場から取り込む。体重・血圧など他の欄には触らない）
   var SYNC_FETCH_URL='https://kumalog-sync.anshin-syukatu.workers.dev/a7f3c9e2/fetch';
   $('syncBtn').addEventListener('click', function(){
     if(!window.confirm('クマから睡眠と歩数を取り込みますか？')) return;
