@@ -228,7 +228,7 @@
 
   <!-- 保存先の一文（控えめに。詳しくは「説明」タブの「記録の保存について」） -->
   <p class="storage-line">記録はこの端末の中だけに保存されます。機種変更やブラウザのデータ消去で消えることがあります。</p>
-  <p class="storage-line">いま表示している版：<b>v7</b>（入力すっきり版）</p>
+  <p class="storage-line">いま表示している版：<b>v8</b>（保存したら空になる版）</p>
   <p class="storage-line hidden" id="storageNote"></p>
 
   <nav class="tabs" role="tablist" aria-label="くまログ">
@@ -504,6 +504,7 @@
         <summary>更新履歴</summary>
         <div class="fold-body">
           <ul>
+            <li><b>v8</b>：保存すると入力した内容が空になるようにした（保存されたことが目で見て分かり、次の入力を空から始められるように）。あわせて、歩数欄が空の保存で連携の歩数が消える問題を修正</li>
             <li><b>v7</b>：＋／−ボタンと前回の値の自動表示をやめ、直接入力に統一。血圧を横一列に。連携ボタンの名称を変更。タブ切り替えは先頭から表示。グラフは明日までの範囲で右端から表示。日付まわりを小さく整理</li>
             <li><b>v6</b>：いま表示している版の表示を追加。画面の更新が届きやすく</li>
             <li><b>v5</b>：歩数の手入力を「前日の分」として前日の記録に入れるよう変更</li>
@@ -870,6 +871,8 @@
     persist();
     $('toast').style.color='var(--chip-good)';
     $('toast').textContent='✓ '+fmtDateJP(r.date)+' の記録を保存しました（'+Object.keys(records).length+'件）'+(fs!=null? '／歩数は '+fmtDateJP(pd)+' 分として保存':'');
+    // 保存できたら入力欄を空にする（保存されたことが目で見て分かり、次は空から始められるように）
+    clearForm();
     updateCounts(); renderHistory(); renderGraph();
   });
 

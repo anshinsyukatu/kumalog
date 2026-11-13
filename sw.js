@@ -6,7 +6,7 @@
  */
 "use strict";
 
-var CACHE_VERSION = "v7";
+var CACHE_VERSION = "v8";
 var CACHE_NAME = "kumalog-cache-" + CACHE_VERSION;
 
 var PRECACHE_URLS = [
