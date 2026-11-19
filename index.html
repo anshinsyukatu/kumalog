@@ -64,8 +64,10 @@
   .head h1{font-size:24px;line-height:1.15;margin:0;font-weight:800;letter-spacing:.02em;display:flex;align-items:flex-start;flex-wrap:wrap}
   .head h1 .done{font-size:12px;font-weight:700;color:#fff;background:var(--accent);padding:3px 8px;border-radius:999px;margin-left:8px;margin-top:5px;letter-spacing:.06em}
   /* マークは固定色セット＋太い線＋耳・目は塗りで、小さくても見えるようにする */
-  .bear-c{flex:0 0 auto;width:31px;height:31px;margin-left:4px;margin-top:0;border:2.6px solid #D84336;border-radius:50%;background:#FFFDF8;color:#D84336;display:inline-grid;place-items:center}
+  .bear-c{position:relative;flex:0 0 auto;width:31px;height:31px;margin-left:4px;margin-top:0;border:2.6px solid #D84336;border-radius:50%;background:#FFFDF8;color:#D84336;display:inline-grid;place-items:center}
   .bear-c svg{width:22px;height:22px;display:block}
+  /* バッジ右下の © ピル：固定色セット（ダークモードでも反転しない）。SVG自体は編集せず表示側で重ねる */
+  .bear-c::after{content:"©";position:absolute;right:-7px;bottom:-7px;font-size:9px;line-height:1;font-weight:700;color:#3A352D;background:#f0dcbc;border:1px solid #b39b6d;border-radius:999px;padding:2px 3px}
 
   /* 保存先の一文（小さく控えめに。詳しくは「説明」タブの「記録の保存について」） */
   .storage-line{margin:0 2px;font-size:12px;line-height:1.5;color:var(--sub)}
@@ -215,6 +217,7 @@
   .divider{height:1px;background:var(--card-line);margin:14px 0}
   footer{margin-top:10px}
   .foot-note{font-size:12.5px;color:var(--sub);text-align:center;margin:0}
+  .foot-copy{margin-top:2px}
   .hidden{display:none !important}
 </style>
 </head>
@@ -228,7 +231,7 @@
 
   <!-- 保存先の一文（控えめに。詳しくは「説明」タブの「記録の保存について」） -->
   <p class="storage-line">記録はこの端末の中だけに保存されます。機種変更やブラウザのデータ消去で消えることがあります。</p>
-  <p class="storage-line">いま表示している版：<b>v8</b>（保存したら空になる版）</p>
+  <p class="storage-line">いま表示している版：<b>v9</b>（くままに©を追加した版）</p>
   <p class="storage-line hidden" id="storageNote"></p>
 
   <nav class="tabs" role="tablist" aria-label="くまログ">
@@ -504,6 +507,7 @@
         <summary>更新履歴</summary>
         <div class="fold-body">
           <ul>
+            <li><b>v9</b>：くままバッジに © を添え、ページ下部に「© 2026 hiro」の表記を追加</li>
             <li><b>v8</b>：保存すると入力した内容が空になるようにした（保存されたことが目で見て分かり、次の入力を空から始められるように）。あわせて、歩数欄が空の保存で連携の歩数が消える問題を修正</li>
             <li><b>v7</b>：＋／−ボタンと前回の値の自動表示をやめ、直接入力に統一。血圧を横一列に。連携ボタンの名称を変更。タブ切り替えは先頭から表示。グラフは明日までの範囲で右端から表示。日付まわりを小さく整理</li>
             <li><b>v6</b>：いま表示している版の表示を追加。画面の更新が届きやすく</li>
@@ -554,6 +558,7 @@
 
   <footer>
     <p class="foot-note">くまログ ・ ブラウザ版</p>
+    <p class="foot-note foot-copy">© 2026 hiro</p>
   </footer>
 </div>
 
